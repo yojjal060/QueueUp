@@ -1,43 +1,42 @@
 import "dotenv/config";
 import { createServer } from "http";
-import { Server as SocketIOServer } from "socket.io";
+import { fileURLToPath } from "url";
 import app from "./app.js";
+import {
+  createSocketServer,
+  registerSocketHandlers,
+} from "./sockets/index.js";
 
-const PORT = process.env.PORT ?? 3001;
+const DEFAULT_PORT = Number(process.env.PORT ?? 3001);
 
-// ─── Create HTTP Server ──────────────────────────────────────────────────────
+export function createQueueUpServer() {
+  const httpServer = createServer(app);
+  const io = createSocketServer(httpServer);
 
-const httpServer = createServer(app);
+  registerSocketHandlers(io);
 
-// ─── Socket.io Setup (placeholder for Epic 2) ───────────────────────────────
+  return { httpServer, io };
+}
 
-const io = new SocketIOServer(httpServer, {
-  cors: {
-    origin: process.env.CLIENT_URL ?? "http://localhost:5173",
-    methods: ["GET", "POST"],
-  },
-});
+export async function startServer(port: number = DEFAULT_PORT) {
+  const { httpServer, io } = createQueueUpServer();
 
-io.on("connection", (socket) => {
-  console.log(`[Socket] Client connected: ${socket.id}`);
-
-  socket.on("disconnect", () => {
-    console.log(`[Socket] Client disconnected: ${socket.id}`);
+  await new Promise<void>((resolve) => {
+    httpServer.listen(port, () => {
+      console.log(`
+QueueUp Server Running
+REST API:  http://localhost:${port}/api
+Socket.io: ws://localhost:${port}
+      `);
+      resolve();
+    });
   });
-});
 
-// Export io for use in other modules (Epic 2)
-export { io };
+  return { httpServer, io };
+}
 
-// ─── Start Server ────────────────────────────────────────────────────────────
+const isEntryPoint = process.argv[1] === fileURLToPath(import.meta.url);
 
-httpServer.listen(PORT, () => {
-  console.log(`
-  ╔══════════════════════════════════════════╗
-  ║       🎮  QueueUp Server Running  🎮      ║
-  ║──────────────────────────────────────────║
-  ║  REST API:  http://localhost:${PORT}/api     ║
-  ║  Socket.io: ws://localhost:${PORT}           ║
-  ╚══════════════════════════════════════════╝
-  `);
-});
+if (isEntryPoint) {
+  void startServer();
+}

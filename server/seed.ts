@@ -1,15 +1,13 @@
 import { prisma } from "./libs/prisma.js";
 
 async function main() {
-  console.log("🌱 Seeding database...\n");
+  console.log("Seeding database...\n");
 
-  // Clear existing data
   await prisma.message.deleteMany();
   await prisma.lobbyMember.deleteMany();
   await prisma.lobby.deleteMany();
   await prisma.user.deleteMany();
 
-  // Create test users
   const yojjal = await prisma.user.create({
     data: {
       username: "Yojjal",
@@ -31,9 +29,15 @@ async function main() {
     },
   });
 
-  console.log(`  ✅ Created ${3} users`);
+  const nightOwl = await prisma.user.create({
+    data: {
+      username: "NightOwl",
+      avatar: null,
+    },
+  });
 
-  // Create PUBG lobby
+  console.log("  Created 4 users");
+
   const pubgLobby = await prisma.lobby.create({
     data: {
       code: "PUBG01",
@@ -45,7 +49,6 @@ async function main() {
     },
   });
 
-  // Create Marvel Rivals lobby
   const marvelLobby = await prisma.lobby.create({
     data: {
       code: "MRVL01",
@@ -57,7 +60,6 @@ async function main() {
     },
   });
 
-  // Create a private lobby
   const privateLobby = await prisma.lobby.create({
     data: {
       code: "PRIV01",
@@ -68,9 +70,8 @@ async function main() {
     },
   });
 
-  console.log(`  ✅ Created ${3} lobbies`);
+  console.log("  Created 3 lobbies");
 
-  // Add members to lobbies
   await prisma.lobbyMember.createMany({
     data: [
       { userId: yojjal.id, lobbyId: pubgLobby.id, role: "HOST", rank: "ACE" },
@@ -87,7 +88,7 @@ async function main() {
         rank: "DIAMOND_I",
       },
       {
-        userId: yojjal.id,
+        userId: nightOwl.id,
         lobbyId: privateLobby.id,
         role: "HOST",
         rank: "CROWN",
@@ -95,13 +96,12 @@ async function main() {
     ],
   });
 
-  console.log(`  ✅ Added lobby members`);
+  console.log("  Added lobby members");
 
-  // Add some chat messages
   await prisma.message.createMany({
     data: [
       {
-        content: "Welcome! Looking for 2 more for Erangel. 🎯",
+        content: "Welcome! Looking for 2 more for Erangel.",
         userId: yojjal.id,
         lobbyId: pubgLobby.id,
       },
@@ -111,23 +111,23 @@ async function main() {
         lobbyId: pubgLobby.id,
       },
       {
-        content: "LFG Marvel Rivals ranked! Any role welcome 🦸",
+        content: "LFG Marvel Rivals ranked! Any role welcome.",
         userId: proPlayer.id,
         lobbyId: marvelLobby.id,
       },
     ],
   });
 
-  console.log(`  ✅ Added chat messages`);
-  console.log("\n🎉 Seed complete!");
+  console.log("  Added chat messages");
+  console.log("\nSeed complete!");
 }
 
 main()
   .then(async () => {
     await prisma.$disconnect();
   })
-  .catch(async (e) => {
-    console.error("❌ Seed failed:", e);
+  .catch(async (error) => {
+    console.error("Seed failed:", error);
     await prisma.$disconnect();
     process.exit(1);
   });

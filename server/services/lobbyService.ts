@@ -25,6 +25,17 @@ export type LobbyWithMembers = Prisma.LobbyGetPayload<{
   include: typeof lobbyWithMembers;
 }>;
 
+function ensureLobbyResult(
+  lobby: LobbyWithMembers | null,
+  message: string
+): LobbyWithMembers {
+  if (!lobby) {
+    throw new AppError(message, 404, { code: "LobbyNotFound" });
+  }
+
+  return lobby;
+}
+
 export async function getActiveLobbyMembershipForUser(userId: string) {
   const membership = await prisma.lobbyMember.findFirst({
     where: {
@@ -133,10 +144,12 @@ export async function createLobby(input: CreateLobbyInput) {
     });
 
     // Return lobby with members included
-    return tx.lobby.findUnique({
+    const createdLobby = await tx.lobby.findUnique({
       where: { id: lobby.id },
       include: lobbyWithMembers,
     });
+
+    return ensureLobbyResult(createdLobby, "Created lobby could not be loaded");
   });
 }
 
@@ -191,10 +204,12 @@ export async function joinLobby(input: JoinLobbyInput) {
   });
 
   // Return updated lobby with members
-  return prisma.lobby.findUnique({
+  const updatedLobby = await prisma.lobby.findUnique({
     where: { id: lobby.id },
     include: lobbyWithMembers,
   });
+
+  return ensureLobbyResult(updatedLobby, "Lobby could not be loaded after join");
 }
 
 // ─── Leave Lobby ─────────────────────────────────────────────────────────────
@@ -375,8 +390,13 @@ export async function transferHost(
     }),
   ]);
 
-  return prisma.lobby.findUnique({
+  const updatedLobby = await prisma.lobby.findUnique({
     where: { id: lobby.id },
     include: lobbyWithMembers,
   });
+
+  return ensureLobbyResult(
+    updatedLobby,
+    "Lobby could not be loaded after host transfer"
+  );
 }

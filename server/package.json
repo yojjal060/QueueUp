@@ -7,6 +7,7 @@
     "dev": "tsx watch server.ts",
     "start": "tsx server.ts",
     "seed": "tsx seed.ts",
+    "smoke:realtime": "tsx scripts/realtimeSmoke.ts",
     "db:migrate": "npx prisma migrate dev",
     "db:push": "npx prisma db push",
     "db:generate": "npx prisma generate",
@@ -22,6 +23,7 @@
     "@types/node": "^25.6.2",
     "@types/pg": "^8.20.0",
     "prisma": "^7.8.0",
+    "socket.io-client": "^4.8.3",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   },
