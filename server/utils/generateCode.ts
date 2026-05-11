@@ -1,5 +1,3 @@
 export function generateLobbyCode(): string {
-  return Math.random().toString(36).substring(2, 8).toUpperCase()
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
-
-console.log(generateLobbyCode())

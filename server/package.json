@@ -1,22 +1,27 @@
 {
-  "name": "server",
+  "name": "queueup-server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "QueueUp — Real-time matchmaking platform backend",
+  "main": "server.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx watch server.ts",
+    "start": "tsx server.ts",
+    "seed": "tsx seed.ts",
+    "db:migrate": "npx prisma migrate dev",
+    "db:push": "npx prisma db push",
+    "db:generate": "npx prisma generate",
+    "db:studio": "npx prisma studio"
   },
   "keywords": [],
-  "author": "",
+  "author": "Yojjal",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.6.2",
     "@types/pg": "^8.20.0",
-    "nodemon": "^3.1.14",
     "prisma": "^7.8.0",
-    "ts-node-dev": "^2.0.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   },
