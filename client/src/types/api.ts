@@ -50,6 +50,14 @@ export interface Lobby {
   };
 }
 
+export interface LobbyOperationResult {
+  lobbyId: string;
+  newHostId?: string | null;
+  lobbyClosed?: boolean;
+  userId?: string;
+  username?: string;
+}
+
 export interface Message {
   id: string;
   content: string;

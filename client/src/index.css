@@ -255,4 +255,43 @@ textarea {
   .scan-surface:hover::after {
     transform: translateX(125%);
   }
+
+  .member-card {
+    animation: member-entry 260ms ease;
+    transition:
+      transform 220ms ease,
+      border-color 220ms ease,
+      box-shadow 220ms ease,
+      background 220ms ease;
+  }
+
+  .member-card-live {
+    transform: translateY(-2px);
+    border-color: rgba(255, 181, 159, 0.34);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 246, 238, 0.08),
+      0 0 0 1px rgba(255, 181, 159, 0.1),
+      0 16px 36px rgba(0, 0, 0, 0.24);
+    background: linear-gradient(
+      180deg,
+      rgba(60, 44, 34, 0.72),
+      rgba(29, 27, 26, 0.88)
+    );
+  }
+
+  .feed-card {
+    animation: member-entry 220ms ease;
+  }
+}
+
+@keyframes member-entry {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

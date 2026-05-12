@@ -259,6 +259,61 @@ export async function leaveLobby(userId: string, code: string) {
   return { lobbyId: lobby.id, newHostId, lobbyClosed: remainingMembers.length === 0 };
 }
 
+export async function kickLobbyMember(
+  hostUserId: string,
+  code: string,
+  targetUserId: string
+) {
+  const lobby = await prisma.lobby.findUnique({
+    where: { code },
+    include: lobbyWithMembers,
+  });
+
+  if (!lobby) {
+    throw new AppError("Lobby not found", 404, { code: "LobbyNotFound" });
+  }
+
+  if (!lobby.isActive) {
+    throw new AppError("Lobby is no longer active", 400, {
+      code: "LobbyNotActive",
+    });
+  }
+
+  const hostMember = lobby.members.find(
+    (member) => member.userId === hostUserId && member.role === "HOST"
+  );
+
+  if (!hostMember) {
+    throw new AppError("Only the host can remove members", 403, {
+      code: "HostActionRequired",
+    });
+  }
+
+  if (hostUserId === targetUserId) {
+    throw new AppError("Hosts cannot remove themselves from the lobby", 400, {
+      code: "InvalidKickTarget",
+    });
+  }
+
+  const targetMember = lobby.members.find((member) => member.userId === targetUserId);
+
+  if (!targetMember) {
+    throw new AppError("Target member is not in this lobby", 404, {
+      code: "LobbyMemberNotFound",
+    });
+  }
+
+  await prisma.lobbyMember.delete({
+    where: { id: targetMember.id },
+  });
+
+  return {
+    lobbyId: lobby.id,
+    userId: targetMember.userId,
+    username: targetMember.user.username,
+  };
+}
+
 // ─── List Public Lobbies ─────────────────────────────────────────────────────
 
 export interface ListLobbiesFilter {

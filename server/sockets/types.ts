@@ -53,6 +53,12 @@ export interface ServerToClientEvents {
   }) => void;
   "lobby:updated": (payload: { lobby: LobbyWithMembers }) => void;
   "lobby:closed": (payload: { lobbyCode: string }) => void;
+  "lobby:kicked": (payload: {
+    lobbyCode: string;
+    kickedUserId: string;
+    kickedByUserId: string;
+    kickedByUsername: string;
+  }) => void;
   "chat:new-message": (payload: { message: MessageWithUser }) => void;
 }
 

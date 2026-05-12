@@ -462,6 +462,119 @@ async function main() {
     const closeEvent = await closeEventPromise;
     assert.equal(closeEvent.lobbyCode, lobbyOne.code);
 
+    const kickLobbyResponse = await apiRequest<CreatedLobby>(baseUrl, "/api/lobbies", {
+      method: "POST",
+      sessionToken: host.sessionToken,
+      body: {
+        title: `${TEST_PREFIX}_Lobby_Kick`,
+        game: "PUBG_MOBILE",
+        visibility: "PUBLIC",
+        maxPlayers: 4,
+        hostRank: "ACE",
+      },
+    });
+
+    assert.equal(kickLobbyResponse.status, 201);
+    assertApiSuccess(kickLobbyResponse);
+    const kickLobby = kickLobbyResponse.body.data;
+
+    const kickLobbyJoinResponse = await apiRequest<{ code: string }>(
+      baseUrl,
+      `/api/lobbies/${kickLobby.code}/join`,
+      {
+        method: "POST",
+        sessionToken: member.sessionToken,
+        body: {
+          rank: "DIAMOND",
+        },
+      }
+    );
+
+    assert.equal(kickLobbyJoinResponse.status, 200);
+
+    const kickHostSocket = await connectClientSocket(baseUrl, host.sessionToken);
+    openSockets.push(kickHostSocket);
+
+    const kickMemberSocket = await connectClientSocket(baseUrl, member.sessionToken);
+    openSockets.push(kickMemberSocket);
+
+    const kickHostJoin = await emitAck<{ lobby: { code: string } }>(
+      kickHostSocket,
+      "lobby:join",
+      { lobbyCode: kickLobby.code }
+    );
+    assert.equal(kickHostJoin.ok, true);
+
+    const kickMemberJoin = await emitAck<{ lobby: { code: string } }>(
+      kickMemberSocket,
+      "lobby:join",
+      { lobbyCode: kickLobby.code }
+    );
+    assert.equal(kickMemberJoin.ok, true);
+
+    const kickedEventPromise = waitForEvent<{
+      lobbyCode: string;
+      kickedUserId: string;
+      kickedByUserId: string;
+      kickedByUsername: string;
+    }>(kickMemberSocket, "lobby:kicked");
+    const hostSawKickLeavePromise = waitForEvent<{
+      lobbyCode: string;
+      userId: string;
+      newHostId: string | null;
+      lobbyClosed: boolean;
+    }>(kickHostSocket, "lobby:member-left");
+    const hostSawKickUpdatePromise = waitForEvent<{
+      lobby: { members: Array<{ userId: string }> };
+    }>(kickHostSocket, "lobby:updated");
+
+    const kickMemberResponse = await apiRequest<{ userId: string }>(
+      baseUrl,
+      `/api/lobbies/${kickLobby.code}/kick`,
+      {
+        method: "POST",
+        sessionToken: host.sessionToken,
+        body: {
+          userId: member.id,
+        },
+      }
+    );
+
+    assert.equal(kickMemberResponse.status, 200);
+
+    const kickedEvent = await kickedEventPromise;
+    assert.equal(kickedEvent.lobbyCode, kickLobby.code);
+    assert.equal(kickedEvent.kickedUserId, member.id);
+    assert.equal(kickedEvent.kickedByUserId, host.id);
+    assert.equal(kickedEvent.kickedByUsername, host.username);
+
+    const hostSawKickLeave = await hostSawKickLeavePromise;
+    assert.equal(hostSawKickLeave.lobbyCode, kickLobby.code);
+    assert.equal(hostSawKickLeave.userId, member.id);
+    assert.equal(hostSawKickLeave.newHostId, null);
+    assert.equal(hostSawKickLeave.lobbyClosed, false);
+
+    const hostSawKickUpdate = await hostSawKickUpdatePromise;
+    assert.equal(hostSawKickUpdate.lobby.members.length, 1);
+
+    const kickLobbyCloseEventPromise = waitForEvent<{ lobbyCode: string }>(
+      kickHostSocket,
+      "lobby:closed"
+    );
+
+    const kickLobbyCloseResponse = await apiRequest<{ lobbyId: string }>(
+      baseUrl,
+      `/api/lobbies/${kickLobby.code}/close`,
+      {
+        method: "POST",
+        sessionToken: host.sessionToken,
+      }
+    );
+
+    assert.equal(kickLobbyCloseResponse.status, 200);
+    const kickLobbyCloseEvent = await kickLobbyCloseEventPromise;
+    assert.equal(kickLobbyCloseEvent.lobbyCode, kickLobby.code);
+
     const secondLobbyResponse = await apiRequest<CreatedLobby>(baseUrl, "/api/lobbies", {
       method: "POST",
       sessionToken: host.sessionToken,

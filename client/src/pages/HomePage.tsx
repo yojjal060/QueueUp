@@ -157,7 +157,7 @@ export function HomePage() {
           </h2>
           <p className="mt-3 max-w-xl text-white/66">
             If your host already has the room ready, drop the six-character code
-            here and jump straight into the dossier before you take a seat.
+            here and jump straight into the live room before you take a seat.
           </p>
 
           <form className="mt-8 flex flex-col gap-4 sm:flex-row" onSubmit={handleJoinSubmit}>
@@ -169,7 +169,7 @@ export function HomePage() {
               value={joinCode}
             />
             <button className="button-primary sm:min-w-48" type="submit">
-              Open Preview
+              Open Lobby
             </button>
           </form>
 

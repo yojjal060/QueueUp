@@ -8,6 +8,7 @@ import type { Game, LobbyVisibility } from "../generated/prisma/client.js";
 import {
   closeLobbyRoom,
   emitLobbyClosed,
+  emitLobbyKicked,
   emitLobbyMemberJoined,
   emitLobbyMemberLeft,
   emitLobbyUpdated,
@@ -183,6 +184,50 @@ export async function closeLobby(
 
   emitLobbyClosed(code);
   closeLobbyRoom(code);
+
+  res.json({
+    success: true,
+    data: result,
+  });
+}
+
+/**
+ * POST /api/lobbies/:code/kick
+ * Remove a member from the lobby (host only). Requires session.
+ */
+export async function kickLobbyMember(
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> {
+  const code = getRouteParam(req.params.code, "code");
+  const targetUserId =
+    typeof req.body?.userId === "string" ? req.body.userId.trim() : "";
+
+  if (!targetUserId) {
+    throw new AppError("Target userId is required", 400, {
+      code: "InvalidKickTarget",
+    });
+  }
+
+  const result = await lobbyService.kickLobbyMember(
+    req.user!.id,
+    code,
+    targetUserId
+  );
+
+  emitLobbyKicked(targetUserId, code, {
+    kickedByUserId: req.user!.id,
+    kickedByUsername: req.user!.username,
+  });
+  removeUserFromLobbyConnections(targetUserId, code);
+  emitLobbyMemberLeft(code, {
+    userId: targetUserId,
+    newHostId: null,
+    lobbyClosed: false,
+  });
+
+  const updatedLobby = await lobbyService.getLobbyByCode(code);
+  emitLobbyUpdated(code, updatedLobby);
 
   res.json({
     success: true,

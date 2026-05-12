@@ -1,10 +1,28 @@
-import { useEffect, useMemo, useState } from "react";
-import { useLocation, useParams } from "react-router";
+import {
+  startTransition,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { SessionPanel } from "../components/SessionPanel";
 import { StatusBanner } from "../components/StatusBanner";
 import { useSession } from "../context/useSession";
 import { useGames } from "../hooks/useGames";
-import { ApiError, getLobby, getLobbyMessages, joinLobby } from "../services/api";
+import {
+  ApiError,
+  closeLobby as closeLobbyRequest,
+  getLobby,
+  getLobbyMessages,
+  joinLobby,
+  kickLobbyMember as kickLobbyMemberRequest,
+  leaveLobby as leaveLobbyRequest,
+} from "../services/api";
+import {
+  createLobbySocket,
+  type QueueUpClientSocket,
+} from "../services/socket";
 import type { Lobby, Message } from "../types/api";
 import {
   formatGameId,
@@ -14,41 +32,256 @@ import {
 } from "../utils/formatters";
 import { getGamePresentation, getInitials } from "../utils/presentation";
 
+interface RoomBanner {
+  tone: "info" | "success" | "error";
+  title: string;
+  message: string;
+}
+
+function getRoomErrorMessage(error: unknown) {
+  if (error instanceof ApiError) {
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Could not load this lobby.";
+}
+
 export function LobbyPreviewPage() {
   const { code = "" } = useParams();
+  const normalizedCode = code.trim().toUpperCase();
   const location = useLocation();
+  const navigate = useNavigate();
   const { session } = useSession();
   const { games } = useGames();
   const [lobby, setLobby] = useState<Lobby | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(
+  const [banner, setBanner] = useState<RoomBanner | null>(
     typeof (location.state as { notice?: unknown } | null)?.notice === "string"
-      ? ((location.state as { notice?: string }).notice ?? null)
+      ? {
+          tone: "success",
+          title: "Room ready",
+          message: (location.state as { notice?: string }).notice ?? "",
+        }
       : null
   );
   const [joinRank, setJoinRank] = useState("");
   const [joinError, setJoinError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [kickingUserId, setKickingUserId] = useState<string | null>(null);
+  const [connectionState, setConnectionState] = useState<
+    "idle" | "connecting" | "live" | "offline"
+  >("idle");
+  const [socketError, setSocketError] = useState<string | null>(null);
+  const [highlightedMemberIds, setHighlightedMemberIds] = useState<string[]>([]);
+  const highlightTimersRef = useRef<Map<string, number>>(new Map());
 
-  const game = useMemo(
-    () => games.find((entry) => entry.id === lobby?.game) ?? null,
-    [games, lobby?.game]
-  );
+  const game = games.find((entry) => entry.id === lobby?.game) ?? null;
   const presentation = getGamePresentation(lobby?.game);
-
-  const viewerMembership = useMemo(
-    () =>
-      lobby?.members.find((member) => member.userId === session?.id) ?? null,
-    [lobby, session?.id]
+  const viewerMembership =
+    lobby?.members.find((member) => member.userId === session?.id) ?? null;
+  const host = lobby?.members.find((member) => member.role === "HOST") ?? null;
+  const availableSeats = lobby
+    ? Math.max(lobby.maxPlayers - lobby.members.length, 0)
+    : 0;
+  const isHost = viewerMembership?.role === "HOST";
+  const canSubscribeToRoom = Boolean(
+    session?.sessionToken && viewerMembership && lobby?.isActive
   );
+  const inviteUrl =
+    typeof window === "undefined"
+      ? ""
+      : `${window.location.origin}/join?code=${normalizedCode}`;
+
+  useEffect(() => {
+    const timers = highlightTimersRef.current;
+
+    return () => {
+      for (const timer of timers.values()) {
+        window.clearTimeout(timer);
+      }
+      timers.clear();
+    };
+  }, []);
+
+  const flashMember = useEffectEvent((userId: string) => {
+    const existingTimer = highlightTimersRef.current.get(userId);
+    if (existingTimer) {
+      window.clearTimeout(existingTimer);
+    }
+
+    setHighlightedMemberIds((current) =>
+      current.includes(userId) ? current : [...current, userId]
+    );
+
+    const timer = window.setTimeout(() => {
+      setHighlightedMemberIds((current) =>
+        current.filter((entry) => entry !== userId)
+      );
+      highlightTimersRef.current.delete(userId);
+    }, 1800);
+
+    highlightTimersRef.current.set(userId, timer);
+  });
+
+  const appendMessage = useEffectEvent((message: Message) => {
+    setMessages((current) =>
+      current.some((entry) => entry.id === message.id)
+        ? current
+        : [...current, message]
+    );
+  });
+
+  const handleLobbyUpdated = useEffectEvent((nextLobby: Lobby) => {
+    const previousHostId =
+      lobby?.members.find((member) => member.role === "HOST")?.userId ?? null;
+    const nextHost =
+      nextLobby.members.find((member) => member.role === "HOST") ?? null;
+
+    setLobby(nextLobby);
+
+    if (!nextLobby.isActive) {
+      setBanner({
+        tone: "info",
+        title: "Lobby closed",
+        message:
+          "This room is no longer accepting joins. You can still review the final roster and recent chat.",
+      });
+    }
+
+    if (nextHost && previousHostId && nextHost.userId !== previousHostId) {
+      flashMember(nextHost.userId);
+      setBanner({
+        tone: "info",
+        title: "Host updated",
+        message:
+          nextHost.userId === session?.id
+            ? "Host ownership transferred to you."
+            : `${nextHost.user.username} is now hosting the room.`,
+      });
+    }
+  });
+
+  const handleMemberJoined = useEffectEvent(
+    (payload: { lobbyCode: string; member: Lobby["members"][number] }) => {
+      if (payload.lobbyCode !== normalizedCode) {
+        return;
+      }
+
+      flashMember(payload.member.userId);
+
+      if (payload.member.userId !== session?.id) {
+        setBanner({
+          tone: "info",
+          title: "Roster update",
+          message: `${payload.member.user.username} joined the lobby.`,
+        });
+      }
+    }
+  );
+
+  const handleMemberLeft = useEffectEvent(
+    (payload: {
+      lobbyCode: string;
+      userId: string;
+      newHostId: string | null;
+      lobbyClosed: boolean;
+    }) => {
+      if (payload.lobbyCode !== normalizedCode) {
+        return;
+      }
+
+      const departingMember =
+        lobby?.members.find((member) => member.userId === payload.userId) ?? null;
+      const nextHost =
+        lobby?.members.find((member) => member.userId === payload.newHostId) ?? null;
+
+      if (payload.lobbyClosed) {
+        setBanner({
+          tone: "info",
+          title: "Lobby closed",
+          message: "The final member left, so the room has been closed.",
+        });
+        return;
+      }
+
+      if (payload.newHostId) {
+        flashMember(payload.newHostId);
+      }
+
+      setBanner({
+        tone: "info",
+        title: "Roster update",
+        message: departingMember
+          ? nextHost
+            ? `${departingMember.user.username} left. ${nextHost.user.username} is now hosting.`
+            : `${departingMember.user.username} left the lobby.`
+          : "The lobby roster changed.",
+      });
+    }
+  );
+
+  const handleLobbyClosed = useEffectEvent((payload: { lobbyCode: string }) => {
+    if (payload.lobbyCode !== normalizedCode) {
+      return;
+    }
+
+    setLobby((current) => (current ? { ...current, isActive: false } : current));
+    setBanner({
+      tone: "info",
+      title: "Lobby closed",
+      message:
+        "The host closed this room. You can head back to browse or create the next lobby.",
+    });
+  });
+
+  const handleLobbyKicked = useEffectEvent(
+    (payload: {
+      lobbyCode: string;
+      kickedUserId: string;
+      kickedByUserId: string;
+      kickedByUsername: string;
+    }) => {
+      if (payload.lobbyCode !== normalizedCode || payload.kickedUserId !== session?.id) {
+        return;
+      }
+
+      setLobby((current) =>
+        current
+          ? {
+              ...current,
+              members: current.members.filter(
+                (member) => member.userId !== payload.kickedUserId
+              ),
+            }
+          : current
+      );
+      setConnectionState("idle");
+      setSocketError(null);
+      setBanner({
+        tone: "info",
+        title: "Removed from lobby",
+        message: `${payload.kickedByUsername} removed you from this room. You can still inspect it, but your seat is gone.`,
+      });
+    }
+  );
+
+  const handleChatMessage = useEffectEvent((payload: { message: Message }) => {
+    appendMessage(payload.message);
+  });
 
   useEffect(() => {
     let isCancelled = false;
 
-    async function loadLobby() {
-      if (!code) {
+    async function loadLobbyRoom() {
+      if (!normalizedCode) {
         if (!isCancelled) {
           setError("Missing lobby code.");
           setIsLoading(false);
@@ -58,23 +291,32 @@ export function LobbyPreviewPage() {
 
       try {
         const [lobbyData, messageData] = await Promise.all([
-          getLobby(code.toUpperCase()),
-          getLobbyMessages(code.toUpperCase()),
+          getLobby(normalizedCode),
+          getLobbyMessages(normalizedCode),
         ]);
 
-        if (!isCancelled) {
-          setLobby(lobbyData);
-          setMessages(messageData.data);
-          setJoinRank((currentRank) => currentRank || lobbyData.rankFilter || "");
-          setError(null);
+        if (isCancelled) {
+          return;
+        }
+
+        setLobby(lobbyData);
+        setMessages(messageData.data);
+        setJoinRank((current) => current || lobbyData.rankFilter || "");
+        setError(null);
+
+        if (!lobbyData.isActive) {
+          setBanner((current) =>
+            current ?? {
+              tone: "info",
+              title: "Lobby closed",
+              message:
+                "This room has already been closed. You can still inspect the roster and last activity.",
+            }
+          );
         }
       } catch (loadError) {
         if (!isCancelled) {
-          if (loadError instanceof ApiError) {
-            setError(loadError.message);
-          } else {
-            setError("Could not load this lobby.");
-          }
+          setError(getRoomErrorMessage(loadError));
         }
       } finally {
         if (!isCancelled) {
@@ -83,12 +325,84 @@ export function LobbyPreviewPage() {
       }
     }
 
-    void loadLobby();
+    void loadLobbyRoom();
 
     return () => {
       isCancelled = true;
     };
-  }, [code]);
+  }, [normalizedCode]);
+
+  useEffect(() => {
+    if (!session?.sessionToken || !canSubscribeToRoom) {
+      return;
+    }
+
+    const socket = createLobbySocket(session.sessionToken);
+
+    function disconnectSocket(activeSocket: QueueUpClientSocket) {
+      if (activeSocket.connected) {
+        activeSocket.emit("lobby:leave", { lobbyCode: normalizedCode }, () => {
+          activeSocket.disconnect();
+        });
+
+        window.setTimeout(() => {
+          if (activeSocket.connected) {
+            activeSocket.disconnect();
+          }
+        }, 150);
+      } else {
+        activeSocket.disconnect();
+      }
+    }
+
+    socket.on("connect", () => {
+      setConnectionState("connecting");
+      setSocketError(null);
+
+      socket.emit("lobby:join", { lobbyCode: normalizedCode }, (response) => {
+        if (!response.ok) {
+          setConnectionState("offline");
+          setSocketError(response.error.message);
+          return;
+        }
+
+        setLobby(response.data.lobby);
+        setConnectionState("live");
+      });
+    });
+
+    socket.on("disconnect", () => {
+      setConnectionState((current) => (current === "idle" ? current : "offline"));
+    });
+
+    socket.on("connect_error", (connectError) => {
+      setConnectionState("offline");
+      setSocketError(
+        connectError.message || "Could not connect to the live lobby room."
+      );
+    });
+
+    socket.on("lobby:updated", ({ lobby: nextLobby }) => {
+      handleLobbyUpdated(nextLobby);
+    });
+    socket.on("lobby:member-joined", handleMemberJoined);
+    socket.on("lobby:member-left", handleMemberLeft);
+    socket.on("lobby:closed", handleLobbyClosed);
+    socket.on("lobby:kicked", handleLobbyKicked);
+    socket.on("chat:new-message", handleChatMessage);
+
+    socket.connect();
+
+    return () => {
+      socket.removeAllListeners();
+      disconnectSocket(socket);
+    };
+  }, [
+    canSubscribeToRoom,
+    lobby?.isActive,
+    normalizedCode,
+    session?.sessionToken,
+  ]);
 
   async function handleJoin() {
     if (!session || !lobby) {
@@ -98,6 +412,7 @@ export function LobbyPreviewPage() {
     try {
       setIsJoining(true);
       setJoinError(null);
+
       const joinedLobby = await joinLobby(
         lobby.code,
         joinRank || null,
@@ -105,16 +420,162 @@ export function LobbyPreviewPage() {
       );
 
       setLobby(joinedLobby);
-      setNotice(`You joined ${joinedLobby.code}. Your slot is now locked in.`);
+      setBanner({
+        tone: "success",
+        title: "Joined",
+        message: `You joined ${joinedLobby.code}. Your seat is locked in.`,
+      });
     } catch (joinAttemptError) {
-      setJoinError(
-        joinAttemptError instanceof Error
-          ? joinAttemptError.message
-          : "Could not join this lobby."
-      );
+      if (
+        joinAttemptError instanceof ApiError &&
+        typeof joinAttemptError.details?.activeLobbyCode === "string"
+      ) {
+        setJoinError(
+          `${joinAttemptError.message} Active room: ${joinAttemptError.details.activeLobbyCode}.`
+        );
+      } else {
+        setJoinError(getRoomErrorMessage(joinAttemptError));
+      }
     } finally {
       setIsJoining(false);
     }
+  }
+
+  async function handleLeaveLobby() {
+    if (!session || !lobby) {
+      return;
+    }
+
+    const shouldLeave = window.confirm(
+      "Leave this lobby and release your spot?"
+    );
+
+    if (!shouldLeave) {
+      return;
+    }
+
+    try {
+      setIsLeaving(true);
+      await leaveLobbyRequest(lobby.code, session.sessionToken);
+
+      startTransition(() => {
+        navigate("/browse");
+      });
+    } catch (leaveError) {
+      setBanner({
+        tone: "error",
+        title: "Leave failed",
+        message: getRoomErrorMessage(leaveError),
+      });
+    } finally {
+      setIsLeaving(false);
+    }
+  }
+
+  async function handleCloseLobby() {
+    if (!session || !lobby) {
+      return;
+    }
+
+    const shouldClose = window.confirm(
+      "Close this lobby for everyone? Members will stop receiving live room updates."
+    );
+
+    if (!shouldClose) {
+      return;
+    }
+
+    try {
+      setIsClosing(true);
+      await closeLobbyRequest(lobby.code, session.sessionToken);
+      setLobby((current) => (current ? { ...current, isActive: false } : current));
+      setBanner({
+        tone: "success",
+        title: "Lobby closed",
+        message: "This room has been closed and is no longer accepting joins.",
+      });
+    } catch (closeError) {
+      setBanner({
+        tone: "error",
+        title: "Close failed",
+        message: getRoomErrorMessage(closeError),
+      });
+    } finally {
+      setIsClosing(false);
+    }
+  }
+
+  async function handleKickMember(userId: string, username: string) {
+    if (!session || !lobby) {
+      return;
+    }
+
+    const shouldKick = window.confirm(
+      `Remove ${username} from this lobby?`
+    );
+
+    if (!shouldKick) {
+      return;
+    }
+
+    try {
+      setKickingUserId(userId);
+      await kickLobbyMemberRequest(lobby.code, userId, session.sessionToken);
+      setBanner({
+        tone: "success",
+        title: "Member removed",
+        message: `${username} was removed from the lobby.`,
+      });
+    } catch (kickError) {
+      setBanner({
+        tone: "error",
+        title: "Kick failed",
+        message: getRoomErrorMessage(kickError),
+      });
+    } finally {
+      setKickingUserId(null);
+    }
+  }
+
+  async function handleCopyValue(value: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setBanner({
+        tone: "success",
+        title: `${label} copied`,
+        message:
+          label === "Invite"
+            ? "The shareable room link is on your clipboard."
+            : "The lobby code is on your clipboard.",
+      });
+    } catch {
+      setBanner({
+        tone: "error",
+        title: "Copy failed",
+        message: `Could not copy the ${label.toLowerCase()} from this browser session.`,
+      });
+    }
+  }
+
+  async function handleShareInvite() {
+    if (!lobby) {
+      return;
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `QueueUp lobby ${lobby.code}`,
+          text: `Join ${lobby.title} on QueueUp.`,
+          url: inviteUrl,
+        });
+        return;
+      } catch {
+        // Fall through to clipboard copy when share is cancelled or unavailable.
+      }
+    }
+
+    await handleCopyValue(inviteUrl, "Invite");
   }
 
   if (isLoading) {
@@ -131,19 +592,25 @@ export function LobbyPreviewPage() {
 
   if (error || !lobby) {
     return (
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-3xl space-y-5">
         <StatusBanner
           tone="error"
           title="Lobby unavailable"
           message={error ?? "This lobby could not be found."}
         />
+        <div className="flex flex-wrap gap-3">
+          <Link className="button-primary" to="/browse">
+            Browse lobbies
+          </Link>
+          <Link className="button-secondary" to="/join">
+            Join by code
+          </Link>
+        </div>
       </div>
     );
   }
 
-  const host = lobby.members.find((member) => member.role === "HOST") ?? null;
-  const availableSeats = Math.max(lobby.maxPlayers - lobby.members.length, 0);
-  const recentMessages = messages.slice(-6);
+  const recentMessages = messages.slice(-8);
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
@@ -163,6 +630,25 @@ export function LobbyPreviewPage() {
                   <span className="status-chip">
                     {lobby.members.length}/{lobby.maxPlayers} players
                   </span>
+                  <span
+                    className={`status-chip ${
+                      connectionState === "live"
+                        ? "border-[#9ee8e8]/18 bg-[#0f3b3b]/24 text-[#d9fffe]"
+                        : connectionState === "connecting"
+                          ? "border-white/18 bg-white/6 text-white/78"
+                          : "border-[#ffb59f]/20 bg-[#802a0d]/16 text-[#fff6ee]"
+                    }`}
+                  >
+                    {viewerMembership
+                      ? connectionState === "live"
+                        ? "Live sync"
+                        : connectionState === "connecting"
+                          ? "Syncing"
+                          : "Offline sync"
+                      : lobby.isActive
+                        ? "Inspect mode"
+                        : "Closed room"}
+                  </span>
                 </div>
                 <h1 className="font-display mt-5 max-w-3xl text-4xl leading-none text-white sm:text-5xl">
                   {lobby.title}
@@ -171,7 +657,7 @@ export function LobbyPreviewPage() {
                   {host ? `${host.user.username} is anchoring this room.` : "Host ready."}{" "}
                   {lobby.rankFilter
                     ? `Entry is tuned for ${formatRank(lobby.rankFilter)} and above.`
-                    : "Entry is open-rank, but the roster still stays visible before you step in."}
+                    : "Entry is open-rank, with the roster and lobby state visible before anyone commits."}
                 </p>
               </div>
 
@@ -185,13 +671,27 @@ export function LobbyPreviewPage() {
               </div>
             </div>
 
-            {notice ? (
+            {banner ? (
               <div className="mt-6">
-                <StatusBanner tone="success" title="Ready" message={notice} />
+                <StatusBanner
+                  tone={banner.tone}
+                  title={banner.title}
+                  message={banner.message}
+                />
               </div>
             ) : null}
 
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {socketError && viewerMembership && lobby.isActive ? (
+              <div className="mt-4">
+                <StatusBanner
+                  tone="error"
+                  title="Live link paused"
+                  message={socketError}
+                />
+              </div>
+            ) : null}
+
+            <div className="mt-8 grid gap-4 md:grid-cols-4">
               <div className="glass-panel-soft p-4">
                 <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
                   Minimum rank
@@ -208,6 +708,14 @@ export function LobbyPreviewPage() {
               </div>
               <div className="glass-panel-soft p-4">
                 <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
+                  Host
+                </p>
+                <p className="mt-2 text-lg text-white">
+                  {host?.user.username ?? "Unknown"}
+                </p>
+              </div>
+              <div className="glass-panel-soft p-4">
+                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
                   Status
                 </p>
                 <p className="mt-2 text-lg text-white">
@@ -218,14 +726,29 @@ export function LobbyPreviewPage() {
           </div>
         </article>
 
-        <div className="grid gap-6 lg:grid-cols-[0.96fr_1.04fr]">
+        <div className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr]">
           <section className="glass-panel p-6">
-            <p className="eyebrow">Current roster</p>
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="eyebrow">Current roster</p>
+                <h2 className="font-display mt-3 text-3xl text-white">
+                  Everyone in the room
+                </h2>
+              </div>
+              <span className="font-caps text-[11px] uppercase tracking-[0.24em] text-white/42">
+                {lobby.members.length}/{lobby.maxPlayers}
+              </span>
+            </div>
+
             <div className="mt-5 space-y-3">
               {lobby.members.map((member) => (
                 <div
+                  className={`member-card glass-panel-soft flex flex-wrap items-center justify-between gap-4 px-4 py-4 ${
+                    highlightedMemberIds.includes(member.userId)
+                      ? "member-card-live"
+                      : ""
+                  }`}
                   key={member.id}
-                  className="glass-panel-soft flex flex-wrap items-center justify-between gap-4 px-4 py-4"
                 >
                   <div className="flex items-center gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-[#2b2a28] font-caps text-[11px] uppercase tracking-[0.18em] text-white">
@@ -234,6 +757,7 @@ export function LobbyPreviewPage() {
                     <div>
                       <p className="font-semibold text-white">
                         {member.user.username}
+                        {member.userId === session?.id ? " (You)" : ""}
                       </p>
                       <p className="text-sm text-white/60">
                         {member.rank ? formatRank(member.rank) : "Rank hidden"}
@@ -245,10 +769,27 @@ export function LobbyPreviewPage() {
                       <span className="status-chip border-[#ffb59f]/20 bg-[#802a0d]/16 text-[#fff6ee]">
                         Host
                       </span>
-                    ) : null}
+                    ) : (
+                      <span className="status-chip">Member</span>
+                    )}
                     <span className="status-chip">
                       {formatRelativeTime(member.joinedAt)}
                     </span>
+                    {isHost &&
+                    member.role !== "HOST" &&
+                    member.userId !== session?.id &&
+                    lobby.isActive ? (
+                      <button
+                        className="button-ghost"
+                        disabled={kickingUserId === member.userId}
+                        onClick={() =>
+                          void handleKickMember(member.userId, member.user.username)
+                        }
+                        type="button"
+                      >
+                        {kickingUserId === member.userId ? "Removing..." : "Remove"}
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -257,6 +798,10 @@ export function LobbyPreviewPage() {
 
           <section className="glass-panel p-6">
             <p className="eyebrow">Mission parameters</p>
+            <h2 className="font-display mt-3 text-3xl text-white">
+              Room brief and join rules
+            </h2>
+
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div className="glass-panel-soft p-4">
                 <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
@@ -268,25 +813,23 @@ export function LobbyPreviewPage() {
               </div>
               <div className="glass-panel-soft p-4">
                 <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
-                  Available seats
-                </p>
-                <p className="mt-2 text-lg text-white">{availableSeats}</p>
-              </div>
-              <div className="glass-panel-soft p-4">
-                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
-                  Host
-                </p>
-                <p className="mt-2 text-lg text-white">
-                  {host?.user.username ?? "Unknown"}
-                </p>
-              </div>
-              <div className="glass-panel-soft p-4">
-                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
                   Game
                 </p>
                 <p className="mt-2 text-lg text-white">
                   {game?.name ?? formatGameId(lobby.game)}
                 </p>
+              </div>
+              <div className="glass-panel-soft p-4">
+                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
+                  Rank floor
+                </p>
+                <p className="mt-2 text-lg text-white">{formatRank(lobby.rankFilter)}</p>
+              </div>
+              <div className="glass-panel-soft p-4">
+                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
+                  Open seats
+                </p>
+                <p className="mt-2 text-lg text-white">{availableSeats}</p>
               </div>
             </div>
 
@@ -295,26 +838,38 @@ export function LobbyPreviewPage() {
                 Room brief
               </p>
               <p className="mt-3 text-sm leading-7 text-white/68">
-                Preview first, then commit. This page keeps the member list, rank
-                floor, and recent chat visible so nobody joins blind.
+                This is the live room surface for the lobby. Members stay synced
+                in real time, the host role transfers if someone leaves, and the
+                room can be shared or closed directly from here.
               </p>
             </div>
           </section>
         </div>
 
         <section className="glass-panel p-6">
-          <p className="eyebrow">Recent transmissions</p>
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow">Recent transmissions</p>
+              <h2 className="font-display mt-3 text-3xl text-white">
+                Last room chat activity
+              </h2>
+            </div>
+            <span className="font-caps text-[11px] uppercase tracking-[0.24em] text-white/42">
+              {recentMessages.length} visible
+            </span>
+          </div>
+
           <div className="mt-5 space-y-3">
             {recentMessages.length === 0 ? (
               <div className="glass-panel-soft p-5">
                 <p className="text-sm leading-6 text-white/62">
-                  No chat history yet. The room is clean and waiting for the first
-                  message.
+                  No chat history yet. Epic 5 will deepen this area, but the room
+                  is already wired to reflect new incoming messages live.
                 </p>
               </div>
             ) : (
               recentMessages.map((message) => (
-                <div key={message.id} className="glass-panel-soft px-4 py-4">
+                <div className="feed-card glass-panel-soft px-4 py-4" key={message.id}>
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#2b2a28] font-caps text-[10px] uppercase tracking-[0.18em] text-white">
@@ -338,64 +893,151 @@ export function LobbyPreviewPage() {
 
       <aside className="space-y-6">
         {session ? (
-          <div className="glass-panel p-6">
-            <p className="eyebrow">Your access</p>
-            {viewerMembership ? (
-              <StatusBanner
-                tone="success"
-                title="Already in"
-                message={`You are already part of ${lobby.code}. The roster is holding your seat.`}
-              />
-            ) : (
-              <>
-                <h2 className="font-display mt-3 text-3xl text-white">
-                  Join this lobby
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-white/65">
-                  Pick your current rank for {game?.name ?? "this game"} and QueueUp
-                  will validate it against the room&apos;s published floor before you
-                  take the slot.
-                </p>
+          viewerMembership ? (
+            <div className="glass-panel p-6">
+              <p className="eyebrow">Room controls</p>
+              <h2 className="font-display mt-3 text-3xl text-white">
+                You&apos;re inside the lobby
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-white/66">
+                Share the invite, keep an eye on sync status, and manage your slot
+                from here.
+              </p>
 
-                <label className="mt-5 block">
-                  <span className="mb-2 block font-caps text-[11px] uppercase tracking-[0.24em] text-white/54">
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <div className="glass-panel-soft p-4">
+                  <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
+                    Your role
+                  </p>
+                  <p className="mt-2 text-lg text-white">
+                    {viewerMembership.role === "HOST" ? "Host" : "Member"}
+                  </p>
+                </div>
+                <div className="glass-panel-soft p-4">
+                  <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
                     Your rank
-                  </span>
-                  <select
-                    className="input-shell"
-                    onChange={(event) => setJoinRank(event.target.value)}
-                    value={joinRank}
-                  >
-                    <option value="">Choose a rank</option>
-                    {game?.ranks.map((rank) => (
-                      <option key={rank} value={rank}>
-                        {formatRank(rank)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                  </p>
+                  <p className="mt-2 text-lg text-white">
+                    {formatRank(viewerMembership.rank)}
+                  </p>
+                </div>
+              </div>
 
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <button
-                  className="button-primary mt-5 w-full"
-                  disabled={isJoining || !lobby.isActive}
-                  onClick={() => void handleJoin()}
+                  className="button-secondary"
+                  onClick={() => void handleCopyValue(lobby.code, "Code")}
                   type="button"
                 >
-                  {isJoining
-                    ? "Joining lobby..."
-                    : lobby.isActive
-                      ? "Join lobby"
-                      : "Lobby closed"}
+                  Copy code
                 </button>
+                <button
+                  className="button-secondary"
+                  onClick={() => void handleCopyValue(inviteUrl, "Invite")}
+                  type="button"
+                >
+                  Copy invite
+                </button>
+                <button
+                  className="button-secondary sm:col-span-2"
+                  onClick={() => void handleShareInvite()}
+                  type="button"
+                >
+                  Share invite
+                </button>
+              </div>
 
-                {joinError ? (
-                  <div className="mt-4">
-                    <StatusBanner tone="error" title="Join blocked" message={joinError} />
-                  </div>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  className="button-ghost"
+                  disabled={isLeaving}
+                  onClick={() => void handleLeaveLobby()}
+                  type="button"
+                >
+                  {isLeaving ? "Leaving..." : "Leave lobby"}
+                </button>
+                {isHost ? (
+                  <button
+                    className="button-primary"
+                    disabled={isClosing || !lobby.isActive}
+                    onClick={() => void handleCloseLobby()}
+                    type="button"
+                  >
+                    {isClosing ? "Closing..." : "Close lobby"}
+                  </button>
                 ) : null}
-              </>
-            )}
-          </div>
+              </div>
+
+              {isHost && lobby.isActive ? (
+                <p className="mt-4 text-sm leading-6 text-white/52">
+                  Host controls let you close the room or remove individual members
+                  directly from the roster.
+                </p>
+              ) : null}
+            </div>
+          ) : lobby.isActive ? (
+            <div className="glass-panel p-6">
+              <p className="eyebrow">Your access</p>
+              <h2 className="font-display mt-3 text-3xl text-white">
+                Join this lobby
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-white/65">
+                Pick your current rank for {game?.name ?? "this game"} and QueueUp
+                will validate it against the room&apos;s published floor before you
+                take the slot.
+              </p>
+
+              <label className="mt-5 block">
+                <span className="mb-2 block font-caps text-[11px] uppercase tracking-[0.24em] text-white/54">
+                  Your rank
+                </span>
+                <select
+                  className="input-shell"
+                  onChange={(event) => setJoinRank(event.target.value)}
+                  value={joinRank}
+                >
+                  <option value="">Choose a rank</option>
+                  {game?.ranks.map((rank) => (
+                    <option key={rank} value={rank}>
+                      {formatRank(rank)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                className="button-primary mt-5 w-full"
+                disabled={isJoining || !lobby.isActive}
+                onClick={() => void handleJoin()}
+                type="button"
+              >
+                {isJoining ? "Joining lobby..." : "Join lobby"}
+              </button>
+
+              {joinError ? (
+                <div className="mt-4">
+                  <StatusBanner
+                    tone="error"
+                    title="Join blocked"
+                    message={joinError}
+                  />
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <div className="glass-panel p-6">
+              <StatusBanner
+                tone="info"
+                title="Lobby closed"
+                message="This room is no longer open for new members."
+              />
+              <div className="mt-5">
+                <Link className="button-primary" to="/browse">
+                  Browse active lobbies
+                </Link>
+              </div>
+            </div>
+          )
         ) : (
           <SessionPanel
             title="Launch your callsign to take the slot"
@@ -431,7 +1073,7 @@ export function LobbyPreviewPage() {
               <p className="mt-2 text-sm leading-6 text-white/68">
                 {lobby.isActive
                   ? `${availableSeats} seats are still open right now.`
-                  : "This lobby has already been closed by the host or room state."}
+                  : "This lobby has been closed and is now read-only."}
               </p>
             </div>
           </div>

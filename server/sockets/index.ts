@@ -378,6 +378,27 @@ export function emitLobbyClosed(lobbyCode: string) {
   io?.to(getLobbyRoom(lobbyCode)).emit("lobby:closed", { lobbyCode });
 }
 
+export function emitLobbyKicked(
+  userId: string,
+  lobbyCode: string,
+  payload: {
+    kickedByUserId: string;
+    kickedByUsername: string;
+  }
+) {
+  const presenceKey = getPresenceKey(userId, lobbyCode);
+  const socketIds = Array.from(activePresence.get(presenceKey) ?? []);
+
+  for (const socketId of socketIds) {
+    io?.to(socketId).emit("lobby:kicked", {
+      lobbyCode,
+      kickedUserId: userId,
+      kickedByUserId: payload.kickedByUserId,
+      kickedByUsername: payload.kickedByUsername,
+    });
+  }
+}
+
 export function emitChatMessage(
   lobbyCode: string,
   message: messageService.MessageWithUser

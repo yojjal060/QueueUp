@@ -1,6 +1,7 @@
 import type {
   GamesResponse,
   Lobby,
+  LobbyOperationResult,
   Message,
   PaginatedResponse,
   UserSession,
@@ -158,6 +159,47 @@ export async function joinLobby(
     sessionToken,
     body: JSON.stringify({ rank }),
   });
+
+  return response.data;
+}
+
+export async function leaveLobby(code: string, sessionToken: string) {
+  const response = await requestEnvelope<LobbyOperationResult>(
+    `/api/lobbies/${code}/leave`,
+    {
+      method: "POST",
+      sessionToken,
+    }
+  );
+
+  return response.data;
+}
+
+export async function closeLobby(code: string, sessionToken: string) {
+  const response = await requestEnvelope<LobbyOperationResult>(
+    `/api/lobbies/${code}/close`,
+    {
+      method: "POST",
+      sessionToken,
+    }
+  );
+
+  return response.data;
+}
+
+export async function kickLobbyMember(
+  code: string,
+  userId: string,
+  sessionToken: string
+) {
+  const response = await requestEnvelope<LobbyOperationResult>(
+    `/api/lobbies/${code}/kick`,
+    {
+      method: "POST",
+      sessionToken,
+      body: JSON.stringify({ userId }),
+    }
+  );
 
   return response.data;
 }

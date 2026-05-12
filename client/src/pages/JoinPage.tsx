@@ -36,7 +36,7 @@ export function JoinPage() {
           <p className="mt-3 max-w-2xl text-lg leading-8 text-white/66">
             Hosts can share a six-character lobby code for friend stacks, late-night
             ranked pushes, and invite-only squads. We&apos;ll take you straight to the
-            preview dossier so you can inspect the roster before you commit.
+            live room so you can inspect the roster before you commit.
           </p>
 
           <form className="mt-8 flex flex-col gap-4 sm:flex-row" onSubmit={handleSubmit}>
@@ -48,7 +48,7 @@ export function JoinPage() {
               value={code}
             />
             <button className="button-primary sm:min-w-48" type="submit">
-              Open Preview
+              Open Lobby
             </button>
           </form>
 
@@ -89,7 +89,7 @@ export function JoinPage() {
               <div>
                 <p className="eyebrow text-[#9ee8e8]">Supported theaters</p>
                 <h2 className="font-display mt-3 text-4xl leading-none text-white">
-                  Any code opens the same clean dossier flow.
+                  Any code opens the same clean room flow.
                 </h2>
               </div>
 
