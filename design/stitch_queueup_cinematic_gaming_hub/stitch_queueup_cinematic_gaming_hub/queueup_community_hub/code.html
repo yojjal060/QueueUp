@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>QueueUp Community Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&amp;family=Hanken+Grotesk:wght@400&amp;family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #141312;
+            color: #e7e1df;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-panel {
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 246, 238, 0.1);
+            border-left: 1px solid rgba(255, 246, 238, 0.1);
+        }
+        .scanning-hover:hover {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            background-size: 200% 100%;
+        }
+        .text-glow {
+            text-shadow: 0 0 10px rgba(255, 181, 159, 0.3);
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#8ad3d3",
+                    "inverse-primary": "#675d4d",
+                    "on-primary-fixed": "#221a0e",
+                    "tertiary-container": "#9ee8e8",
+                    "secondary-fixed-dim": "#ffb59f",
+                    "inverse-surface": "#e7e1df",
+                    "surface": "#141312",
+                    "on-tertiary-fixed-variant": "#004f50",
+                    "surface-container-high": "#2b2a28",
+                    "secondary-fixed": "#ffdbd0",
+                    "surface-tint": "#d3c4b1",
+                    "on-background": "#e7e1df",
+                    "on-primary": "#382f22",
+                    "on-error-container": "#ffdad6",
+                    "error-container": "#93000a",
+                    "surface-dim": "#141312",
+                    "primary": "#fff6ee",
+                    "primary-fixed-dim": "#d3c4b1",
+                    "surface-bright": "#3b3937",
+                    "on-secondary-fixed-variant": "#802a0d",
+                    "on-tertiary-container": "#176a6b",
+                    "outline-variant": "#4c463e",
+                    "outline": "#978f86",
+                    "surface-container-highest": "#363433",
+                    "primary-fixed": "#f0e0cc",
+                    "on-secondary-container": "#ff9b7d",
+                    "error": "#ffb4ab",
+                    "on-primary-fixed-variant": "#4f4537",
+                    "tertiary": "#d9fffe",
+                    "secondary": "#ffb59f",
+                    "on-tertiary-fixed": "#002020",
+                    "on-surface": "#e7e1df",
+                    "primary-container": "#e8d9c5",
+                    "on-tertiary": "#003737",
+                    "on-error": "#690005",
+                    "tertiary-fixed": "#a6efef",
+                    "on-primary-container": "#695e4e",
+                    "surface-variant": "#363433",
+                    "on-surface-variant": "#cec5ba",
+                    "inverse-on-surface": "#32302e",
+                    "on-secondary-fixed": "#3a0a00",
+                    "on-secondary": "#5e1600",
+                    "surface-container-lowest": "#0f0e0d",
+                    "surface-container-low": "#1d1b1a",
+                    "surface-container": "#211f1e",
+                    "secondary-container": "#802a0d",
+                    "background": "#141312"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "margin-desktop": "64px",
+                    "sidebar-width": "280px",
+                    "unit": "8px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "label-caps": ["Space Grotesk"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"],
+                    "headline-md": ["Epilogue"],
+                    "headline-lg": ["Epilogue"],
+                    "display-xl": ["Epilogue"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.15em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-md": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-xl": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 h-16 bg-surface/60 backdrop-blur-xl rounded-full mt-4 mx-auto max-w-5xl border-t border-l border-outline-variant/10 shadow-[0_0_15px_rgba(255,246,238,0.05)]">
+<div class="font-headline-md text-headline-md tracking-tighter text-primary dark:text-primary">QueueUp</div>
+<div class="hidden md:flex gap-8">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Lobbies</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Games</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Rankings</a>
+<a class="font-label-caps text-label-caps text-primary border-b-2 border-secondary pb-1 transition-colors duration-300" href="#">Community</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" data-icon="person">person</button>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full z-40 flex flex-col pt-24 pb-8 bg-surface-container-low dark:bg-surface-container-low border-r border-outline-variant/10 shadow-xl w-sidebar-width hidden lg:flex">
+<div class="px-6 mb-12 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-secondary/30">
+<img alt="Commander" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeNT0mfoTFgRhbymx4QX5Ox5fIqOpt_rZNSRXVb_zqiC9iVNhjCuHX6rKr8u_-3vsbls0hDoi0iFGvfAZunuJS7f5CTL43isEfLPCke_uKYv9Zeihm_IDzsENtAeEKEsBWuNrYyRK91zyXjnl00XBos4k2ajt6evWi-4-14dFfNnXJLMpfO6bd4xsTyW8j7J0a0eLPmC9PIuCZ8XgtesHTZENkTPcv2iHzD9ki5biEaQ3JgNagwAAssheKiY4yo-L85It4sx652xk"/>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-secondary uppercase tracking-widest">Commander</p>
+<p class="font-body-md text-body-md text-on-surface-variant/70">[LVL 42]</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg bg-secondary-container/20 text-secondary border-r-4 border-secondary" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-caps text-label-caps">Squads</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-caps text-label-caps">Direct Messages</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="sensors">sensors</span>
+<span class="font-label-caps text-label-caps">Activity</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+</nav>
+<div class="px-6 mt-auto">
+<button class="w-full py-4 bg-secondary text-on-secondary font-label-caps text-label-caps rounded-lg hover:brightness-110 active:scale-95 transition-all">
+                New Squad
+            </button>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="lg:ml-sidebar-width pt-32 px-margin-desktop pb-24">
+<!-- Header Section -->
+<header class="mb-16">
+<h1 class="font-display-xl text-display-xl text-primary text-glow max-w-4xl">Shape the future of the Arena.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-6 max-w-2xl">Connect with millions of players, share your most intense moments, and find your next legendary squad.</p>
+</header>
+<!-- Bento Grid: Squad Highlights & Feed -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Featured Highlight Clip -->
+<div class="col-span-12 lg:col-span-8 group relative overflow-hidden rounded-xl aspect-video glass-panel">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A cinematic cinematic frame of a competitive first-person shooter game. A player character is performing a high-skill tactical maneuver amidst a futuristic city battleground filled with neon lights and digital particle effects. The lighting is dramatic and moody, featuring deep navy shadows and bright teal and amber highlights that align with a premium gaming aesthetic. The overall atmosphere is intense, high-stakes, and visually immersive." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-gW6UTScocG9cPpKPU9OXQwBqJmm8EmFSHLg-uNR-U0v2UErmDaKg27h7DqKjijIIcvhCXzcdWSSR0C_oyE1oBmqfo7ga-z4nRWlAzFwDC8POIReT5FAXqsi71DOIOBMINyxxtztP6X2xkh3lebtRGXcUFT-7MUQYf7_w5GUXiPExTkktGZe_Xxh_1whEM0xiOdA2JmK6VFmBEQMoF4sZMHBNUgtZ81MpDEllKQqmT43wAoC15il4aKuKIgQftX53n7ZV4vV9h6I"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full">
+<div class="flex items-center gap-3 mb-4">
+<span class="bg-secondary px-3 py-1 font-label-caps text-[10px] text-on-secondary rounded">FEATURED CLIP</span>
+<span class="bg-surface-container-highest px-3 py-1 font-label-caps text-[10px] text-on-surface rounded">4:20 PM</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-2">Neon Phantom: Ghost Defusal</h2>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img alt="User" class="w-10 h-10 rounded-full border border-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiQ2RU_4kqUL07tUpL26hQQVP-E21UBJSiOQvgA3RFYgadvhcPhIOscHzlXQZauBynZLyKnoc8huvyXk8bfnCAcPCpxAuksF2MUbKAIbA12tJ0eJqz8P85h0IETdVpj0oI5QWkt-kINCKnGFHvPQQhKvDATET7WUCgHvbv8gzdE1CvHBIBqiBVxald6hsKKAxD29dNiRntmtreDqq-lnmy-TYCWfxAvQf2pTGLF1EG6pdUkzxPs1zWKUv4mkc0aEvufz6DWislUvM"/>
+<div>
+<p class="font-label-caps text-label-caps text-primary">X_RAY_COMMANDER</p>
+<p class="text-[10px] text-on-surface-variant tracking-widest font-label-caps uppercase">SQUAD: PHANTOM_OPS</p>
+</div>
+</div>
+<div class="flex gap-4">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-caps text-label-caps">1.2K</span>
+</button>
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+<span class="font-label-caps text-label-caps">243</span>
+</button>
+</div>
+</div>
+</div>
+<button class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+<div class="w-20 h-20 bg-primary/20 backdrop-blur-md rounded-full flex items-center justify-center border border-primary/40">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="play_arrow">play_arrow</span>
+</div>
+</button>
+</div>
+<!-- Active Squads List (Side Card) -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-8">
+<div class="glass-panel bg-surface-container-low p-6 rounded-xl flex-1 flex flex-col">
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-label-caps text-label-caps text-primary">ACTIVE SQUAD OPS</h3>
+<span class="material-symbols-outlined text-secondary" data-icon="radar">radar</span>
+</div>
+<div class="space-y-4 flex-1">
+<!-- Squad Item -->
+<div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 scanning-hover transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-headline-md text-[18px] text-primary">VALORANT ELITE</h4>
+<span class="font-label-caps text-[10px] text-tertiary-fixed-dim bg-on-tertiary px-2 py-0.5 rounded">[LFM]</span>
+</div>
+<p class="font-body-md text-sm text-on-surface-variant mb-3">Pushing Immortal rank tonight. Need a Sage main.</p>
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-zPlF1Ycp3LafsRBUPS-ajA78hukK1YoRXQAB7Vi2BI_xPPhbxFj1oOCUrY7nJycCAr-iDyP2oVG-V2qbk3Nd59N8Rh9tQ5_eqNvpDGOrNVt28hUoDXM4vNtfl5kaa48woAblHi5VyWEzUeLDlF8730xvSF3U6X-4KVFCLrUxUnQZrLaK59T8pnYPq16DLmW5wVtDkbuURZ2mnCpEFjl7cNQ9aMFJqmUWahXGBURu65HrtVN_tFJhpiNmj-Ks4PCL1-_fF-aq4GU"/>
+<img class="w-6 h-6 rounded-full border border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkC81zyHzvUXoPAdEFJy3KWUNbLhZ89LAM8xK-3Yl_r4hA4v3sVO1Z37cYHIvLvCU0Cj41nk2b0ryoekvJOtEI7MZefiy9bELgLTddgs7qTanleIFXn5dbp0SEF_k74M6luD_QeM31MTr3kEqus6Vf3KSmtg5csakYCke7SAHaUgCOym3ZEOLYeZ2q6G5DoqqRD4wlxl4d97qL_1Xut1U3H3_t_gv_lWYrNrBtDzf8wjqIwfybh03BInjhhVNLAvWGm43dwz894gM"/>
+<img class="w-6 h-6 rounded-full border border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcHrXBPhcUyWr5rDIsUAk8RhfcPV6jexngYBSyGsg0X6HF3gCOAlakEtlnvtKKMU4070cLllTwG9A_ujf5OFkNJ7b_EmrAnDTjoHh1QXbcmQ0cSsCh9TrhJImTcuLJ_sWMzau_zQ1ReL_LUoVws4sdcHXw9WQp1Ty4aqZTcP2g1_DticyAbtApCqj8iANyeSZOArUMmrOLYmec4lE8edBK4qdeCaqp4VXyvWV-r9SXUYuyMv1H_1L3nan1RNSdT6Xuxp6DOvyENkg"/>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest border border-surface flex items-center justify-center text-[10px] font-label-caps">+2</div>
+</div>
+</div>
+<!-- Squad Item -->
+<div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 scanning-hover transition-all cursor-pointer border-l-4 border-l-secondary">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-headline-md text-[18px] text-primary">RAID: OBSIDIAN</h4>
+<span class="font-label-caps text-[10px] text-secondary bg-secondary-container/20 px-2 py-0.5 rounded">[RDY]</span>
+</div>
+<p class="font-body-md text-sm text-on-surface-variant mb-3">Weekly clear. Full squad ready to launch in 5m.</p>
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrlUWd0rAtvLZqjlPJtvF9RNVENzcS8R5Scs5Y1omfwd_JvrlDDsAaRA_msdNS3N4JZNIfANuFbofRB8HD4Dk-JkO3JyFXGY627zsYcaDX3jGTFgTbmhRUHVMul130Rv-DItcNuuQwL-xxtBVB7-dQaJ48j832V4C60FDirHD-cMZFqkR-_lzpbZgtyvu25RjTFJ9ASM2bUvFTOLy_UcEQqiLrjrJvegNu4dMhn1jKJtzUoE6WPGdtKf3wgFYq5MnslYbC8aftwMg"/>
+<img class="w-6 h-6 rounded-full border border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBap528_ZH8Fi0TS0hI35vI2fvuTzk_O7j7XmwcEjF7xdcqUzAUD46gMUvjkBlgIvDv10Kc4uMa9zf86tFwBtA0jGIr-VWRzmbSIFYpzO8HQfrlL5au2T6gjAkFL16HOOWjpZ0RY7n9VcOISVgg7Ihw8kRSvVSeFYbzhUsf5CZX8zab_bT7QzOwIGI_TzRb_tsEGIGJLCqnUExc-Bh8szIkx3dP35wUjO5fv95isWhCwBjoopKIhVeMBwKuvEreN3gP6y5tDuOnMc"/>
+<img class="w-6 h-6 rounded-full border border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQ_IXwrhf6ILRtTvBnjyRdskYQqCfh9gW2Uk80Kbvc5-KR17IPrw-Df3gP7tVaHn9XGOaUgHg9cukUQUA1Nt2uYhVdmuoKoMNv6m777j3yO5pw9i2rgSBA-ogYKLcQaS8OUzUBlUlWHE3RPeu3P1Gv2d0Tt_HSlr1MJEwtsArjRwLAok0i4G_edlCHYuTnznqb82zxDFkdWR3H6-cG3Ujtyt8qbiLd1CpX2urT4YiLMHtBISFEjnq9oxqn3tLUNcxEvXzo_5rOCSY"/>
+</div>
+</div>
+<!-- Squad Item -->
+<div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 scanning-hover transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-headline-md text-[18px] text-primary">WARZONE PATROL</h4>
+<span class="font-label-caps text-[10px] text-tertiary-fixed-dim bg-on-tertiary px-2 py-0.5 rounded">[LFM]</span>
+</div>
+<p class="font-body-md text-sm text-on-surface-variant mb-3">Casual drops only. Mic required. No toxicity.</p>
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaXZJsy9pXVTjjS4_7XXLOgNfiPKzAzjddtaKKUXClLlF_VSJuwZrJnDXrs_xT2MZ94kOpUEt26DEQKmv3hlN4Tq8CrRPhCkSk75QGo3jm9y2Add5BQeyz8y46DiAdjioS50j_7iUdvnNxcPygaUSCoA_n1WAs7Mt7F0OL26V3XXYOvaEMJBVlBVo-wm8NsIPBxIHZFEexA3UODZ2fyhCt1tlTJKwpukYhsAsRd1qQLjgVFh7Mk8PZoySSuexkCOpitmZ3Cel2UXg"/>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest border border-surface flex items-center justify-center text-[10px] font-label-caps">+1</div>
+</div>
+</div>
+</div>
+<button class="mt-6 w-full py-3 border border-outline-variant/20 font-label-caps text-label-caps hover:bg-surface-variant/40 transition-all rounded-lg">VIEW ALL SQUADS</button>
+</div>
+</div>
+<!-- Community Discussions (Editorial Style) -->
+<div class="col-span-12 lg:col-span-12 mt-8">
+<div class="flex items-end justify-between mb-10">
+<div>
+<span class="font-label-caps text-label-caps text-secondary block mb-2 uppercase">Dialogue</span>
+<h2 class="font-headline-lg text-headline-lg text-primary">Community Discussions</h2>
+</div>
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary underline underline-offset-8">START A THREAD</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Thread Card 1 -->
+<article class="glass-panel p-8 bg-surface-container-lowest rounded-xl border-l-2 border-l-secondary-container group hover:bg-surface-container transition-all">
+<div class="flex gap-2 mb-6">
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-label-caps text-on-surface-variant">STRATEGY</span>
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-label-caps text-on-surface-variant">PATCH 4.0</span>
+</div>
+<h3 class="font-headline-md text-primary mb-4 group-hover:text-secondary transition-colors">Is the new kinetic barrier actually balanced for high-elo play?</h3>
+<p class="font-body-md text-on-surface-variant mb-8 line-clamp-3">The recent buff to kinetic absorption rates has made several entry champions nearly unplayable. I've tracked 50 matches and the win rate for defenders...</p>
+<div class="flex items-center justify-between border-t border-outline-variant/10 pt-6">
+<div class="flex items-center gap-2">
+<img class="w-8 h-8 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-Q65cRQfAMlMgRQdhlgU7ByVNx8xhgtbQnZ1FA9ztL1Xc5cc01xtIZYOy3nar3XWpGPXs77-7KA2hl-fze54Zt0AqIB3KBUTr9RWnIFJOeynoeEjZk_vN7Qx0kPVcvP0ZWV-ZCwZ5XBY29gFpJJU7ePO9oC5dU80RmXo1jf_qNm6gQjrjUWyrUpgKwGgdDt2_SV_wgV6rwjEFImr93mk62opEvi9v-9kV5jHHxUNouGjCxDz7U0tFiAa9Il5F3PmuH0Ex4ekQOs4"/>
+<span class="font-label-caps text-[10px] text-on-surface-variant">AARON_DEV</span>
+</div>
+<div class="flex gap-4 text-on-surface-variant text-[12px] font-label-caps">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]" data-icon="forum">forum</span> 86</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]" data-icon="trending_up">trending_up</span> 1.4K</span>
+</div>
+</div>
+</article>
+<!-- Thread Card 2 -->
+<article class="glass-panel p-8 bg-surface-container-lowest rounded-xl border-l-2 border-l-tertiary-container group hover:bg-surface-container transition-all">
+<div class="flex gap-2 mb-6">
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-label-caps text-on-surface-variant">TOURNAMENT</span>
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-label-caps text-on-surface-variant">PRO LEAGUE</span>
+</div>
+<h3 class="font-headline-md text-primary mb-4 group-hover:text-secondary transition-colors">The QueueUp Invitational: Registration now open for Season 5.</h3>
+<p class="font-body-md text-on-surface-variant mb-8 line-clamp-3">Gather your squad and prepare for the biggest event of the year. $50k prize pool, exclusive skins, and professional scouting opportunities...</p>
+<div class="flex items-center justify-between border-t border-outline-variant/10 pt-6">
+<div class="flex items-center gap-2">
+<img class="w-8 h-8 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbfuxUwmECu4q_lUSJ9-cW22jqVJYKyEIlnASSzsq_UydbL0gURaFa1VKcKI7aBXFvQkF9-qfe6j2QIhqLo6ZeEWaJ1MAaK12flyHWJWdeiYW7FiEQoWS1ZJgoSWlEGEVjAaJ4dVX4b3WCxG4-rPcdGmmX4NW9scsWQrsrEm7C23S5-vLeSmKxMPpBT69AVaOejAPT2lm5pAaCTtTxeWkY6vBpDrRKmwSqfXpFfJS_DMHpONvrToZVSyE3zPyB5o77KdbWCYJA8Qw"/>
+<span class="font-label-caps text-[10px] text-on-surface-variant">PROTOCOL_MOD</span>
+</div>
+<div class="flex gap-4 text-on-surface-variant text-[12px] font-label-caps">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]" data-icon="forum">forum</span> 512</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]" data-icon="visibility">visibility</span> 12K</span>
+</div>
+</div>
+</article>
+<!-- Thread Card 3 (Image Focused) -->
+<article class="glass-panel relative rounded-xl overflow-hidden group">
+<img class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A top-down view of a modern gaming desk setup with high-end mechanical peripherals, a wide-curved monitor showing a vibrant gaming UI, and soft ambient RGB lighting in shades of purple and orange. The room is dark, creating a high-contrast and atmospheric gaming 'inner sanctum' vibe. The aesthetic is clean and professional, focusing on the equipment of a serious competitive player." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXzmBgJg7p3c2Oqel9yBcZ7-Uewdry1d0mpNrzYISzjyKvjMXYAjvSuAJCpPWFy34xoqVRXu5B205Evy6C1utS36aN6Frvh27ICAGrbSLdAxWr1Fu0Zc0N9fPqBScjfN-ZkP9qbjJwwZzXnLWVLNObkwIXfUGTb_7AJUyK52niymKDK-dLehCPH3IeQ7f2DzopzGiMVOqzzO59tFlsD0APcX-KTHGBPTd8ijw06Vkr2OUGfm46Hskbq0ckYrmin1X-0-9yEU8jbTk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container via-surface-container/60 to-transparent"></div>
+<div class="relative p-8 h-full flex flex-col justify-end">
+<span class="font-label-caps text-[10px] text-secondary mb-2">HARDWARE</span>
+<h3 class="font-headline-md text-primary mb-4">Rate my Setup: The Community's Best Battlestations.</h3>
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0RvdbmYfnP4sX9iR9Y8gNYBjuSLgkST1-vz6ZilTcjip5HjLS_QcWptpvislyCJ_zPj1kgCS2n4Qgu30Gjxm1VR7HpeN5iBhPT1OIDc8Ya59VRKe_XLvjfsdo23OIy-cMrruBaud9b_VklfRuTnsG7ArnLwlHwVamDOPvvjyDs1uhdKXZBv2dezcI7gO7A2j2jAsqosiMCHGNPxunVvqUI7KMzdjuOAB4UL7rSTRiQBAvkN5IFtEkhb8ii0e4Zp3rHicarUeJfog"/>
+<img class="w-6 h-6 rounded-full border border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBp_scOdRoSD_fUA69hJlFAqmPxIBpCrz41kB0-1qj2Q6rNz074CO6VqO_JrAn8ounap7yzwkoBhXQJbNyiZgq_o7qvUANVhJONbG0ngL2hcdvDeW6lXWB5RursPkv3vgFnms9q4iYe3FazLbdqYRRFRfVglgKNiSIN2QIKgsCJsDiDtO9BcqXp_pYAy4P16W-a470JEMbFl4VpgHok-Vgu-wXxw34Tq9uZtWlKdR6_PIeTXc656KGpnVoMV8b0QsyJDioE4iu70dQ"/>
+</div>
+<span class="font-label-caps text-[10px] text-on-surface-variant">+42 contributors</span>
+</div>
+</div>
+</article>
+</div>
+</div>
+<!-- Social Interactions & Real-time Chat Previews -->
+<div class="col-span-12 lg:col-span-7 mt-8">
+<div class="glass-panel p-8 bg-surface-container-low rounded-xl">
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-label-caps text-label-caps text-primary">COMMUNITY FEED</h3>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded-full flex items-center justify-center bg-surface-variant text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+</div>
+<div class="space-y-8">
+<!-- Feed Item -->
+<div class="flex gap-4 group">
+<img class="w-12 h-12 rounded-full border-2 border-secondary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXSPlFzIvG8Hr8P8fsX8qphH7WB2lmOIiTDpCPCrcxLzrN2cOKOwALeCofbspF7EmBzwwHno3IO1FJ5XSQJdnzMryElvGFFywPo0iWozgMdLKZtu8G-TNddkUqgWn5u5DKHWQy7fNHsorpCVaw0WJ7yRq1iyJvec92XleFHnrcgImFe1POxnix7BfgrPp0n2_yV3zPXIwv5oQTr1pNItvAXfqlP-3KqatY5MvoYSnlQM2FPLbSEuX8WdtVsKI-5DDzBcuzOL8Ewcs"/>
+<div class="flex-1">
+<div class="flex items-baseline justify-between mb-1">
+<h4 class="font-label-caps text-label-caps text-primary">MAYA_THE_KNIGHT <span class="text-[10px] text-on-surface-variant font-normal ml-2">2h ago</span></h4>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary text-sm" data-icon="more_horiz">more_horiz</button>
+</div>
+<p class="font-body-md text-on-surface-variant leading-relaxed">Just unlocked the Obsidian skin for the Railgun! Hardest grind of my life but so worth it. Anyone want to see it in action tonight? ⚔️</p>
+<div class="flex gap-6 mt-4">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-secondary text-[12px] font-label-caps transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="thumb_up">thumb_up</span> 142
+                                    </button>
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-secondary text-[12px] font-label-caps transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="reply">reply</span> 12
+                                    </button>
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-secondary text-[12px] font-label-caps transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="share">share</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Feed Item with Image -->
+<div class="flex gap-4 group">
+<img class="w-12 h-12 rounded-full border-2 border-secondary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwG_fgHVFu71rPLqxMEXkHQopsIP3pJSXCYXDGhvfrburmH1tVOYQaSu3qfJXZfmU4ofFyGr2JXSC6_1ixc1f2BcHwDlY9ou_D_a3jAhc2HqpOa-vo-nX1M7f9PBDX_W5Drk67cPYa9ehjYmR9usKP8aVHyTuYCH_9uJdyCNBq330gLN_kMfKziI2MCDRJyZo08R5p5VpbXcarzKkcVkr5ogGqliFGJBGDeypNKRKeabuAOY9uacXGeuyf3WVnuF2ZqUkSBiraEU4"/>
+<div class="flex-1">
+<div class="flex items-baseline justify-between mb-1">
+<h4 class="font-label-caps text-label-caps text-primary">GHOST_TRAINER <span class="text-[10px] text-on-surface-variant font-normal ml-2">4h ago</span></h4>
+</div>
+<p class="font-body-md text-on-surface-variant leading-relaxed mb-4">The new map 'Ethereal Station' looks incredible. Check out this lighting work in the reactor room.</p>
+<div class="rounded-lg overflow-hidden border border-outline-variant/10 aspect-video mb-4">
+<img class="w-full h-full object-cover" data-alt="A detailed digital architectural visualization of a sci-fi space station reactor room. The scene is dominated by glowing orange energy conduits and intricate mechanical structures. Cool blue atmospheric fog fills the lower levels, creating a stunning color contrast. The lighting is high-fidelity and cinematic, suitable for a triple-A gaming title environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4rx-OUjgCyaXoE-7V_GiFIiMiOOwHy-rzS2ygbPwIAIX37xwS60XyRuSzmwrZwLxeN-ZDc_CBj8kU22y9VzlKVF1XCdnVY9fqR_Y2rczpoxUIFnLGfPxpVblZUPCsWdhe6d519g1lWHV_eVq-1s1bMYBYzfXpH04zn2inVTlPiFyLWL4DoIlyY2wnY23g_urce-gqFdhC8LqomaUC_P7QQhOYozGwQqaco_5i5FqrQs3Y5cPh0Kh_TB5WYJLMHoVty5TDwOeF9Uo"/>
+</div>
+<div class="flex gap-6 mt-4">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-secondary text-[12px] font-label-caps transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="thumb_up">thumb_up</span> 892
+                                    </button>
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-secondary text-[12px] font-label-caps transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="reply">reply</span> 45
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Live Chat Previews -->
+<div class="col-span-12 lg:col-span-5 mt-8">
+<div class="glass-panel p-8 bg-surface-container-low rounded-xl h-full flex flex-col">
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-label-caps text-label-caps text-primary">LIVE CHAT: REGIONAL HUB</h3>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-label-caps text-[10px] text-secondary">2.4K ONLINE</span>
+</div>
+</div>
+<div class="flex-1 space-y-6 overflow-hidden relative">
+<div class="space-y-4">
+<div class="flex gap-3">
+<span class="font-label-caps text-[10px] text-on-surface-variant whitespace-nowrap">12:04</span>
+<p class="text-sm font-body-md text-on-surface-variant"><span class="font-label-caps text-secondary">ZERO_ONE:</span> Anyone looking to trade the crimson axe skin? I have a gold tier reaper rifle.</p>
+</div>
+<div class="flex gap-3">
+<span class="font-label-caps text-[10px] text-on-surface-variant whitespace-nowrap">12:05</span>
+<p class="text-sm font-body-md text-on-surface-variant"><span class="font-label-caps text-primary-fixed-dim">HYPER_FLY:</span> Reaper rifle is mid since the patch tbh. Better hold on to that axe.</p>
+</div>
+<div class="flex gap-3">
+<span class="font-label-caps text-[10px] text-on-surface-variant whitespace-nowrap">12:05</span>
+<p class="text-sm font-body-md text-on-surface-variant"><span class="font-label-caps text-tertiary-fixed-dim">SYSTEM:</span> [USER_JOINED] xX_Slayer_Xx entered the lobby.</p>
+</div>
+<div class="flex gap-3">
+<span class="font-label-caps text-[10px] text-on-surface-variant whitespace-nowrap">12:06</span>
+<p class="text-sm font-body-md text-on-surface-variant"><span class="font-label-caps text-secondary">ZERO_ONE:</span> @HYPER_FLY wait really? I missed the notes.</p>
+</div>
+<div class="flex gap-3">
+<span class="font-label-caps text-[10px] text-on-surface-variant whitespace-nowrap">12:06</span>
+<p class="text-sm font-body-md text-on-surface-variant"><span class="font-label-caps text-primary-fixed-dim">HYPER_FLY:</span> Yeah, 15% damage reduction on long range hits. It's rough.</p>
+</div>
+</div>
+<!-- Fading effect for chat history -->
+<div class="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-surface-container-low to-transparent"></div>
+</div>
+<div class="mt-8">
+<div class="relative">
+<input class="w-full bg-surface-container border-none rounded-lg py-4 px-6 font-body-md text-on-surface focus:ring-1 focus:ring-secondary transition-all" placeholder="Type a message..." type="text"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-4 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/5">
+<div class="font-label-caps text-label-caps text-primary/50 uppercase tracking-widest">QueueUp Protocol</div>
+<div class="font-body-md text-body-md text-on-surface-variant/50 text-center uppercase tracking-tighter">© 2024 QUEUEUP PROTOCOL. ALL RIGHTS RESERVED.</div>
+<div class="flex gap-8">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Terms</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Privacy</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Status</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Documentation</a>
+</div>
+</footer>
+<!-- FAB (Suppressed for this screen per logic, but included for completeness if needed elsewhere) -->
+<!-- <button class="fixed bottom-8 right-8 w-16 h-16 bg-secondary text-on-secondary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
+        <span class="material-symbols-outlined text-3xl" data-icon="add">add</span>
+    </button> -->
+</body></html>

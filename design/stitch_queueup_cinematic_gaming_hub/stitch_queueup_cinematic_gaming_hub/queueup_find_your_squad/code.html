@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&amp;family=Hanken+Grotesk:wght@400;500&amp;family=Space+Grotesk:wght@700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+body {
+    background-color: #141312;
+    color: #e7e1df
+    }
+.glass-panel {
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 246, 238, 0.1);
+    border-left: 1px solid rgba(255, 246, 238, 0.1)
+    }
+.scanning-effect:hover {
+    background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.05) 45%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 55%, transparent 100%);
+    background-size: 200% 100%
+    }
+.scrim-gradient {
+    background: linear-gradient(to top, rgba(20, 19, 18, 1) 0%, rgba(20, 19, 18, 0.4) 50%, transparent 100%)
+    }
+.grain-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAtm9Eq0UU3uhyEdrhCcoPAyU_NTf6PdIqViMT2aL2_ZGrMGuKx40syslBEapLbNxKV7AC5geuW-wUQnCNbaM2osxVbdJ8_I0QYOxvjMHe2lBljsksvYFNxUV0MorOU_oIjKjpHfFZsbHSC5O4xDjZ-HREW6C9jreX34I8rhc6siDk2YN6DpiisasGG0ADxaHov2vYAY3SCG3mehpn8cEJTT1-g1uePS4UOVPt1qAulYcnAXiMD3qt7E0AJpeG-s2gB1qf3ZWmX8F0);
+    opacity: 0.03
+    }</style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#8ad3d3",
+                        "inverse-primary": "#675d4d",
+                        "on-primary-fixed": "#221a0e",
+                        "tertiary-container": "#9ee8e8",
+                        "secondary-fixed-dim": "#ffb59f",
+                        "inverse-surface": "#e7e1df",
+                        "surface": "#141312",
+                        "on-tertiary-fixed-variant": "#004f50",
+                        "surface-container-high": "#2b2a28",
+                        "secondary-fixed": "#ffdbd0",
+                        "surface-tint": "#d3c4b1",
+                        "on-background": "#e7e1df",
+                        "on-primary": "#382f22",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "surface-dim": "#141312",
+                        "primary": "#fff6ee",
+                        "primary-fixed-dim": "#d3c4b1",
+                        "surface-bright": "#3b3937",
+                        "on-secondary-fixed-variant": "#802a0d",
+                        "on-tertiary-container": "#176a6b",
+                        "outline-variant": "#4c463e",
+                        "outline": "#978f86",
+                        "surface-container-highest": "#363433",
+                        "primary-fixed": "#f0e0cc",
+                        "on-secondary-container": "#ff9b7d",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed-variant": "#4f4537",
+                        "tertiary": "#d9fffe",
+                        "secondary": "#ffb59f",
+                        "on-tertiary-fixed": "#002020",
+                        "on-surface": "#e7e1df",
+                        "primary-container": "#e8d9c5",
+                        "on-tertiary": "#003737",
+                        "on-error": "#690005",
+                        "tertiary-fixed": "#a6efef",
+                        "on-primary-container": "#695e4e",
+                        "surface-variant": "#363433",
+                        "on-surface-variant": "#cec5ba",
+                        "inverse-on-surface": "#32302e",
+                        "on-secondary-fixed": "#3a0a00",
+                        "on-secondary": "#5e1600",
+                        "surface-container-lowest": "#0f0e0d",
+                        "surface-container-low": "#1d1b1a",
+                        "surface-container": "#211f1e",
+                        "secondary-container": "#802a0d",
+                        "background": "#141312"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "margin-desktop": "64px",
+                        "sidebar-width": "280px",
+                        "unit": "8px",
+                        "margin-mobile": "20px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Space Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-md": ["Epilogue"],
+                        "headline-lg": ["Epilogue"],
+                        "display-xl": ["Epilogue"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.15em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-md": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "display-xl": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-body-md text-on-surface min-h-screen relative overflow-x-hidden">
+<!-- Atmosphere Layers -->
+<div class="fixed inset-0 pointer-events-none z-0">
+<div class="absolute inset-0 grain-texture"></div>
+<div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-secondary/10 blur-[120px] rounded-full"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-tertiary-container/5 blur-[120px] rounded-full"></div>
+</div>
+<!-- Top Navigation Shell -->
+<header class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 h-16 bg-surface/60 backdrop-blur-xl rounded-full mt-4 mx-auto max-w-5xl border-t border-l border-outline-variant/10 shadow-[0_0_15px_rgba(255,246,238,0.05)]">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md tracking-tighter text-primary">QueueUp</span>
+</div>
+<nav class="hidden md:flex gap-8">
+<a class="font-label-caps text-label-caps text-primary border-b-2 border-secondary pb-1 transition-colors duration-300" href="#">Lobbies</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Games</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Rankings</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Community</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary hover:scale-110 transition-transform">notifications</button>
+<div class="h-8 w-8 rounded-full bg-surface-container-high border border-outline-variant/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm">person</span>
+</div>
+</div>
+</header>
+<!-- Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full z-40 flex flex-col pt-24 pb-8 w-sidebar-width bg-surface-container-low border-r border-outline-variant/10 shadow-xl">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3 mb-6 p-4 rounded-xl bg-surface-container-high/40 border border-outline-variant/10">
+<div class="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-secondary">Commander</p>
+<p class="font-headline-md text-[14px] text-primary">[LVL 42]</p>
+</div>
+</div>
+<button class="w-full py-3 px-4 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg hover:bg-primary-container transition-all active:scale-95">
+                New Squad
+            </button>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface rounded-lg transition-all group" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 bg-secondary-container/20 text-secondary border-r-4 border-secondary transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-label-caps text-label-caps">Squads</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-label-caps text-label-caps">Direct Messages</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">sensors</span>
+<span class="font-label-caps text-label-caps">Activity</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+</nav>
+<div class="px-6 mt-auto">
+<p class="font-label-caps text-[10px] text-outline mb-4">GAMES FILTER</p>
+<div class="space-y-3">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(255,181,159,0.5)]"></div>
+<span class="font-body-md text-sm text-on-surface group-hover:text-primary">PUBG Battlegrounds</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group opacity-60">
+<div class="w-2 h-2 rounded-full bg-outline"></div>
+<span class="font-body-md text-sm text-on-surface group-hover:text-primary">Marvel Rivals</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group opacity-60">
+<div class="w-2 h-2 rounded-full bg-outline"></div>
+<span class="font-body-md text-sm text-on-surface group-hover:text-primary">Valorant</span>
+</label>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="pl-[280px] pt-32 px-margin-desktop pb-24 relative z-10">
+<header class="mb-12">
+<p class="font-label-caps text-label-caps text-secondary mb-2 tracking-[0.3em]">AVAILABLE OPERATIONS</p>
+<h1 class="font-display-xl text-display-xl text-primary max-w-2xl leading-none">Find Your Next Squad</h1>
+</header>
+<!-- Asymmetrical Grid -->
+<div class="grid grid-cols-12 gap-6 items-start">
+<!-- Featured Lobby (Large) -->
+<div class="col-span-12 lg:col-span-8 group relative overflow-hidden rounded-xl aspect-[16/9] border border-outline-variant/20 shadow-2xl glass-panel scanning-effect transition-transform hover:-translate-y-1">
+<img class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A highly detailed and immersive cinematic still of a futuristic gaming environment from PUBG. The scene features a tactical command center at dusk, with blue neon holographic displays floating in the air. Muted charcoal and deep navy tones dominate the palette, with sharp highlights of dusty orange sparks and soft atmospheric smoke drifting across the foreground. The lighting is low-key and dramatic, emphasizing a high-stakes competitive atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1qGgRb1nvWj9ifru4RZNEjuvqzI-fUK1hWSbUKTJbJ4rwiP_q27-5D2YNPTn_Nq30C4C9VDHFFx029z0HozenGobBgpWWwKfmY5XTsTs94cru7f2x0BJFVzhG1U6Q3oeB6QjSHqjQ7yMNtRc6Nep27i-NAEG6GpokuK9VFw3ZLZsyZIoUI7BwMdnMm4pzmVH7NK4GpeWyObbUPt4cSEMTNz7i6amz_FbEH88OSq732RAYGCdy00x0szCCtQOngZQ2Hiup4HOelIg"/>
+<div class="absolute inset-0 scrim-gradient"></div>
+<div class="absolute top-6 left-6 flex gap-2">
+<div class="px-3 py-1 bg-secondary text-on-secondary font-label-caps text-[10px] rounded">PUBG</div>
+<div class="px-3 py-1 bg-surface-container-highest/80 backdrop-blur-md border border-primary/10 font-label-caps text-[10px] text-primary">RANK: DIAMOND+</div>
+</div>
+<div class="absolute bottom-8 left-8 right-8">
+<div class="flex justify-between items-end">
+<div>
+<div class="flex items-center gap-4 mb-4">
+<div class="flex -space-x-3">
+<div class="w-12 h-12 rounded-full border-2 border-surface bg-surface-container-high"></div>
+<div class="w-12 h-12 rounded-full border-2 border-surface bg-surface-container-high"></div>
+<div class="w-12 h-12 rounded-full border-2 border-surface bg-outline-variant flex items-center justify-center">
+<span class="font-label-caps text-[10px] text-primary">+1</span>
+</div>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">Tactical Extraction</h3>
+<p class="font-body-md text-on-surface-variant">Host: Ghost_Protocol • 2/4 Slots filled</p>
+</div>
+</div>
+<div class="flex gap-2">
+<span class="font-label-caps text-[10px] px-2 py-1 bg-secondary-container/30 text-secondary border border-secondary/20 rounded">[SWEATY]</span>
+<span class="font-label-caps text-[10px] px-2 py-1 bg-tertiary-container/10 text-tertiary border border-tertiary/20 rounded">[MIC REQUIRED]</span>
+</div>
+</div>
+<button class="bg-primary text-on-primary px-8 py-4 font-label-caps text-label-caps rounded-lg shadow-[0_0_20px_rgba(255,246,238,0.2)] hover:bg-secondary transition-all">JOIN LOBBY</button>
+</div>
+</div>
+</div>
+<!-- Side Card 1 -->
+<div class="col-span-12 lg:col-span-4 h-full">
+<div class="h-full flex flex-col gap-6">
+<div class="p-6 rounded-xl bg-surface-container-low border border-outline-variant/10 glass-panel hover:border-secondary/40 transition-colors group">
+<div class="flex justify-between items-start mb-6">
+<span class="font-label-caps text-[10px] text-tertiary">[RDY] LIVE NOW</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">more_vert</span>
+</div>
+<h4 class="font-headline-md text-[20px] text-primary mb-2">Valorant Ranked Grind</h4>
+<p class="font-body-md text-sm text-on-surface-variant mb-6">Ascendant 1 push. Need a solid smokes main.</p>
+<div class="flex items-center justify-between">
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+<button class="font-label-caps text-label-caps text-secondary hover:text-primary transition-colors">JOIN</button>
+</div>
+</div>
+<div class="p-6 rounded-xl bg-surface-container-low border border-outline-variant/10 glass-panel hover:border-secondary/40 transition-colors group">
+<div class="flex justify-between items-start mb-6">
+<span class="font-label-caps text-[10px] text-secondary-fixed-dim">[LFM] WAITING</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">more_vert</span>
+</div>
+<h4 class="font-headline-md text-[20px] text-primary mb-2">Marvel Rivals Chill</h4>
+<p class="font-body-md text-sm text-on-surface-variant mb-6">Testing new combos. Chill vibes only.</p>
+<div class="flex items-center justify-between">
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+<button class="font-label-caps text-label-caps text-secondary hover:text-primary transition-colors">JOIN</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Row 2: Smaller Cards -->
+<div class="col-span-12 md:col-span-4 group relative overflow-hidden rounded-xl aspect-square border border-outline-variant/10 glass-panel transition-all hover:scale-[1.02]">
+<img class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-110 transition-transform duration-500" data-alt="A stylized overhead view of a gamer's tech setup with multiple monitors displaying a competitive shooter. The lighting is dominated by cinematic teal and orange LED strips, creating sharp contrasts and deep shadows. Soft focus smoke effects and floating digital particles add a sense of high-energy motion and professional esports production quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSqZjsUKSWuoxyeTawsXWd6LQVMc_B72p4glPxntHZkJJO4zpSqWKfGT7seqhMPXLwrh_9Wco4uEF6fUtYIOuXoydePTmqDU4gf254SGgEi6sj3mNUHBS469uRJnVpnxxf5ZbVDbGNqVxZW9BUryB4P3Yh_ZSFvSM-mz_yIwW6xei6udX9mjMqzWXbHhrNpUTcAfeJtIaSB3nV-efQbBJ7nh3wK0oV8mnOc34cZ3cGa5zVGl1NmfpLlZz4AdS8XtP_NiFemC8aO8g"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+<div class="absolute inset-0 p-6 flex flex-col justify-end">
+<p class="font-label-caps text-[10px] text-secondary mb-1">PUBG • DUOS</p>
+<h4 class="font-headline-md text-[24px] text-primary mb-4">Chicken Dinners Only</h4>
+<button class="w-full py-3 border border-primary/20 bg-surface/40 backdrop-blur-sm text-primary font-label-caps text-label-caps rounded hover:bg-primary hover:text-on-primary transition-all">REQUEST INVITE</button>
+</div>
+</div>
+<div class="col-span-12 md:col-span-8 group relative overflow-hidden rounded-xl h-[350px] border border-outline-variant/10 glass-panel">
+<div class="flex h-full">
+<div class="w-1/2 p-8 flex flex-col justify-center">
+<div class="flex gap-2 mb-4">
+<span class="font-label-caps text-[10px] px-2 py-1 bg-tertiary-container/20 text-tertiary rounded">ACTIVE</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Elite Vanguard Squad</h3>
+<p class="font-body-md text-on-surface-variant mb-6">Professional scrims for upcoming community tournament. Serious inquiries only.</p>
+<div class="flex items-center gap-6">
+<div>
+<p class="font-label-caps text-[10px] text-outline">WIN RATE</p>
+<p class="font-headline-md text-[20px] text-secondary">78%</p>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-outline">LEVEL AVG</p>
+<p class="font-headline-md text-[20px] text-tertiary">155</p>
+</div>
+</div>
+</div>
+<div class="w-1/2 relative overflow-hidden">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="A dark, atmospheric landscape showing a futuristic neon city skyline reflecting in a dark body of water. The visual style is inspired by modern tactical shooters, with a focus on deep contrast, glowing accents in soft teal and muted orange, and a gritty grain texture. The composition is cinematic and expansive, evoking a sense of high-stakes mission prep." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9j1idORppaYXnLGcyJY33mC6uH9vEwOdx2qqQxRK6rv1PF8RdeTTZtovezKT_fV2BVRlsZ28xIfnn4IQgMbvhi6ITo5OUkUirTE8BpfMIkRJb7oHglXC-LCsFtn4NqK3lJgN7rgG-a6Y8RLZxQqKCUd2wFICmLNQiTSdU_Jz8zRjm5_5AHD76FJzdWfkEmrf6mV1ztLzfWr3S2gC4uxjNBuIyLnruPaRxZXBm5lLHVuOtvkc4S4jVuZZFbMcT2SC1efAU95I4IRg"/>
+<div class="absolute inset-0 bg-gradient-to-r from-background to-transparent"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="w-full py-12 px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-4 bg-surface-container-lowest border-t border-outline-variant/5">
+<div class="flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-primary/50">QUEUEUP PROTOCOL</span>
+<p class="font-body-md text-sm text-on-surface-variant">© 2024 QUEUEUP PROTOCOL. ALL RIGHTS RESERVED.</p>
+</div>
+<div class="flex gap-8">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Terms</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Privacy</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Status</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Documentation</a>
+</div>
+</footer>
+</body></html>

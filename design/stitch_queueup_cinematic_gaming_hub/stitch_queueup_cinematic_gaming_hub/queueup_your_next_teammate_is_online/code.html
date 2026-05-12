@@ -1,0 +1,244 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>QueueUp - Never Queue Alone Again</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,100..900;1,100..900&amp;family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#978f86",
+                      "outline-variant": "#4c463e",
+                      "on-tertiary-container": "#176a6b",
+                      "on-secondary-fixed-variant": "#802a0d",
+                      "surface-bright": "#3b3937",
+                      "primary-fixed-dim": "#d3c4b1",
+                      "surface-dim": "#141312",
+                      "primary": "#fff6ee",
+                      "error-container": "#93000a",
+                      "on-primary": "#382f22",
+                      "on-error-container": "#ffdad6",
+                      "on-background": "#e7e1df",
+                      "surface-tint": "#d3c4b1",
+                      "secondary-fixed": "#ffdbd0",
+                      "surface-container-high": "#2b2a28",
+                      "on-tertiary-fixed-variant": "#004f50",
+                      "surface": "#141312",
+                      "inverse-surface": "#e7e1df",
+                      "secondary-fixed-dim": "#ffb59f",
+                      "tertiary-container": "#9ee8e8",
+                      "on-primary-fixed": "#221a0e",
+                      "inverse-primary": "#675d4d",
+                      "tertiary-fixed-dim": "#8ad3d3",
+                      "background": "#141312",
+                      "secondary-container": "#802a0d",
+                      "surface-container": "#211f1e",
+                      "surface-container-low": "#1d1b1a",
+                      "surface-container-lowest": "#0f0e0d",
+                      "on-secondary": "#5e1600",
+                      "on-secondary-fixed": "#3a0a00",
+                      "on-surface-variant": "#cec5ba",
+                      "inverse-on-surface": "#32302e",
+                      "surface-variant": "#363433",
+                      "on-primary-container": "#695e4e",
+                      "tertiary-fixed": "#a6efef",
+                      "on-error": "#690005",
+                      "on-tertiary": "#003737",
+                      "primary-container": "#e8d9c5",
+                      "on-surface": "#e7e1df",
+                      "secondary": "#ffb59f",
+                      "tertiary": "#d9fffe",
+                      "on-tertiary-fixed": "#002020",
+                      "on-primary-fixed-variant": "#4f4537",
+                      "on-secondary-container": "#ff9b7d",
+                      "error": "#ffb4ab",
+                      "primary-fixed": "#f0e0cc",
+                      "surface-container-highest": "#363433"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "margin-desktop": "64px",
+                      "sidebar-width": "280px",
+                      "margin-mobile": "20px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "label-caps": [
+                              "Space Grotesk"
+                      ],
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-md": [
+                              "Epilogue"
+                      ],
+                      "display-xl": [
+                              "Epilogue"
+                      ],
+                      "headline-lg": [
+                              "Epilogue"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.15em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-xl": [
+                              "72px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.03%22/%3E%3C/svg%3E');
+        }
+      </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="bg-surface/60 backdrop-blur-xl dark:bg-surface/60 full-width top-0 sticky z-50 border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+<div class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-[1920px] mx-auto">
+<div class="font-headline-md text-headline-md font-bold text-secondary dark:text-secondary italic">
+                QueueUp
+            </div>
+<div class="hidden md:flex items-center space-x-gutter">
+<a class="font-label-caps text-label-caps tracking-widest text-primary border-b-2 border-secondary pb-2 scale-95 active:scale-90 transition-transform" href="#">Lobbies</a>
+<a class="font-label-caps text-label-caps tracking-widest text-on-surface-variant hover:text-primary transition-colors hover:bg-white/5 transition-all duration-300 px-3 py-2 rounded scale-95 active:scale-90 transition-transform" href="#">Games</a>
+<a class="font-label-caps text-label-caps tracking-widest text-on-surface-variant hover:text-primary transition-colors hover:bg-white/5 transition-all duration-300 px-3 py-2 rounded scale-95 active:scale-90 transition-transform" href="#">Rankings</a>
+<a class="font-label-caps text-label-caps tracking-widest text-on-surface-variant hover:text-primary transition-colors hover:bg-white/5 transition-all duration-300 px-3 py-2 rounded scale-95 active:scale-90 transition-transform" href="#">Community</a>
+</div>
+<div class="flex items-center space-x-4">
+<button class="hidden md:block font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors"><br></button>
+<button class="bg-secondary text-on-secondary font-label-caps text-label-caps px-6 py-3 rounded scale-95 active:scale-90 transition-transform shadow-[0_0_15px_rgba(255,181,159,0.15)] hover:shadow-[0_0_25px_rgba(255,181,159,0.3)]"><br></button>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="relative min-h-[921px] flex items-center px-margin-mobile md:px-margin-desktop py-24 overflow-hidden max-w-[1920px] mx-auto">
+<!-- Abstract Background Glows -->
+<div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-tertiary-container/10 rounded-full blur-[120px] -z-10"></div>
+<div class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-secondary-container/10 rounded-full blur-[150px] -z-10"></div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter w-full relative z-10 items-center">
+<!-- Left: Typography -->
+<div class="lg:col-span-5 flex flex-col items-start space-y-8 z-20">
+<h1 class="font-display-xl text-display-xl text-primary leading-tight">
+                    Never Queue <br>
+<span class="text-secondary italic">Alone Again.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">
+                    The premium platform to find your squad, coordinate tactics, and dominate the rankings. Step into the inner sanctum of competitive gaming.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+<button class="bg-primary-container text-on-primary-container font-label-caps text-label-caps px-8 py-4 rounded-lg shadow-[0_0_20px_rgba(232,217,197,0.15)] hover:shadow-[0_0_30px_rgba(232,217,197,0.3)] transition-all flex items-center justify-center space-x-2">
+<span class="">Find Squad</span>
+</button>
+<button class="bg-surface-container border border-outline-variant text-on-surface font-label-caps text-label-caps px-8 py-4 rounded-lg hover:bg-surface-bright transition-colors flex items-center justify-center space-x-2 shadow-inner border-t-white/10 border-l-white/10">
+<span class="">Create Lobby</span>
+</button>
+</div>
+</div>
+<!-- Right: Immersive Composition -->
+<div class="lg:col-span-7 relative h-[600px] w-full mt-16 lg:mt-0 perspective-1000">
+<!-- Main Artwork Card -->
+<div class="absolute right-0 top-1/2 -translate-y-1/2 w-[85%] h-[500px] rounded-xl overflow-hidden border border-t-white/10 border-l-white/10 shadow-2xl z-10 transform rotate-y-[-5deg] rotate-z-[2deg]">
+<img alt="Cinematic gaming scene featuring highly detailed cybernetic characters in a moody, neon-lit urban environment. The lighting is dramatic, casting deep shadows across metallic surfaces, emphasizing a high-stakes, competitive atmosphere typical of modern AAA game launchers." class="w-full h-full object-cover opacity-80" data-alt="Cinematic gaming scene featuring highly detailed cybernetic characters in a moody, neon-lit urban environment. The lighting is dramatic, casting deep shadows across metallic surfaces, emphasizing a high-stakes, competitive atmosphere typical of modern AAA game launchers. The overall aesthetic is dark and immersive, fitting a premium gaming platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdGWngU5QdcO3EaheOQ3FzLOj0DKJwNXbNDnOgvmhpq0VkGTHXRx-nJgLNy39bN6mk33IhYB4VT2-RTWTGbuoKsq6gpPK_7zS8uTwLREGhgT_ehy-WYUfW9ALOJtjkoCDYDGkzDXSLTNcV2TJfeMBJJQvSutR1MbaZ8ub4SZHAIW5QtcWKnTv8jOHVqbEJO67KZi6WsaSvnGunP2c8zizJ797fxeem9uu1lurEQTfYoMamjEcZKLz1tiqdUWEApVSi9jVeAuQp6GM">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/40 to-transparent"></div>
+</div>
+<!-- Floating UI Elements -->
+<div class="absolute left-0 bottom-24 w-72 bg-surface-container-high/80 backdrop-blur-xl border border-t-white/10 border-l-white/10 rounded-lg p-6 shadow-[0_20px_40px_rgba(0,0,0,0.6)] z-20 transform translate-y-8 hover:translate-y-4 transition-transform duration-500">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-caps text-label-caps text-tertiary"><span class="text-tertiary-fixed mr-2 animate-pulse">•</span>LIVE LOBBY</span>
+<span class="font-label-caps text-label-caps text-outline">3/4 SLOTS</span>
+</div>
+<div class="font-headline-md text-headline-md text-primary mb-2 text-xl">Ranked Push - Diamond+</div>
+<div class="flex space-x-2 mt-4">
+<div class="w-10 h-10 rounded bg-surface-variant border border-outline-variant overflow-hidden"><img alt="Avatar" class="w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtrcDGRDpQ8YO9klUPM0ft01pVofC0AuU1umho3L3WkYseUSR_aw3xCrvOauMWJjMl8XcDE0R975W90jJ7xkYDU2WEz78Wcvo5y6cGkfmeId3lhohrtFFmD3XVBdvKgMHDUB8hV17CrqlRL-AJ7kqGfzzcV-8iKz_ZxgTzQ8OJbF7MtrBkOarKpDz9lqm2-V_8Chc2sHXqWv2PulGgUTxvT71y8sStWp3XFJyLsZxzod9l2qx4OwPXbGpIH_Yjxes3q0uNoM1mykg"></div>
+<div class="w-10 h-10 rounded bg-surface-variant border border-outline-variant overflow-hidden"><img alt="Avatar" class="w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKTcnA3UqfTX6Cyqtqb236jMrbwJbbNLl4qeGslu5fHkcke9JdzWw_tqhdLWXIPuXev-k2bmClONOi-4u3WzP3i02wPzS664aNj5M6hRBknCSo2SK1qzXqjVxmmixtijohBBNbL9vg-qbnNvCyYCYR6TRWUxIlU1DrFKHTVGXqVheQAViZUeZ2BUYDYlhcfwsJpbA-4_HeeAsmHRlZXjsSbpC62ydD-oyEvtunjPuXV88DbKv6PSOSSrC6LpraRjfz8PXyeefbay0"></div>
+<div class="w-10 h-10 rounded bg-surface-variant border border-outline-variant overflow-hidden"><img alt="Avatar" class="w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDD4Hjy8zrtiBk_dhnGvOoDe5A1I-KY2bI-GWXjWJgHcIBr2EaRvl5q8QX4FQRX30dkv0he-KjXT9Mxh7ndD40CmHZyNbnbMB2IhDEuhW2LPlLWYy5ynvWD1Nz31w8bjWPSCTxOtbMvrMFXuQOhHLXwYwxO87I70Qyc7Iw5ISn7BRYv8LtIyIKb3FuQCAN4alJQ8dKyN7_QeptXNTSzuNGAtE_WTyV-D0VStwrsL_VDGLEhuRCDoxa2lYSxj0y5_OlGpx3BnKDWYBo"></div>
+<div class="w-10 h-10 rounded bg-surface border border-dashed border-outline flex items-center justify-center text-outline-variant font-label-caps text-label-caps">+1</div>
+</div>
+</div>
+<div class="absolute right-12 top-12 w-48 bg-surface-container-low/90 backdrop-blur-md border border-t-white/10 border-l-white/10 rounded-lg p-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-20">
+<div class="font-label-caps text-label-caps text-secondary mb-1">[LFM] Support</div>
+<div class="font-body-md text-body-md text-on-surface-variant text-sm">Need a dedicated healer for nightly raids.</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-surface-container-lowest full-width py-12 border-t border-white/5">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-desktop space-y-8 md:space-y-0 max-w-[1920px] mx-auto">
+<div class="font-headline-md text-headline-md text-primary italic font-bold">
+                QueueUp
+            </div>
+<div class="flex space-x-6 flex-wrap justify-center gap-y-4">
+<a class="font-label-caps text-label-caps text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100 transition-opacity" href="#">Privacy</a>
+<a class="font-label-caps text-label-caps text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100 transition-opacity" href="#">Terms</a>
+<a class="font-label-caps text-label-caps text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100 transition-opacity" href="#">Support</a>
+<a class="font-label-caps text-label-caps text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100 transition-opacity" href="#">Careers</a>
+<a class="font-label-caps text-label-caps text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100 transition-opacity" href="#">Press</a>
+</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant text-xs">
+                © 2024 QUEUEUP PROTOCOL. ALL RIGHTS RESERVED.
+            </div>
+</div>
+</footer>
+
+
+</body></html>

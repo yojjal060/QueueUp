@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Marvel Rivals | QueueUp Protocol</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&amp;family=Hanken+Grotesk:wght@400;500&amp;family=Space+Grotesk:wght@500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(33, 31, 30, 0.6);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 246, 238, 0.1);
+            border-left: 1px solid rgba(255, 246, 238, 0.1);
+        }
+        .scanning-hover:hover {
+            background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+            background-size: 200% 100%;
+        }
+        body {
+            background-color: #141312;
+            background-image: radial-gradient(circle at 50% 0%, #1d1b1a 0%, #0f0e0d 100%);
+            color: #e7e1df;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#8ad3d3",
+                    "inverse-primary": "#675d4d",
+                    "on-primary-fixed": "#221a0e",
+                    "tertiary-container": "#9ee8e8",
+                    "secondary-fixed-dim": "#ffb59f",
+                    "inverse-surface": "#e7e1df",
+                    "surface": "#141312",
+                    "on-tertiary-fixed-variant": "#004f50",
+                    "surface-container-high": "#2b2a28",
+                    "secondary-fixed": "#ffdbd0",
+                    "surface-tint": "#d3c4b1",
+                    "on-background": "#e7e1df",
+                    "on-primary": "#382f22",
+                    "on-error-container": "#ffdad6",
+                    "error-container": "#93000a",
+                    "surface-dim": "#141312",
+                    "primary": "#fff6ee",
+                    "primary-fixed-dim": "#d3c4b1",
+                    "surface-bright": "#3b3937",
+                    "on-secondary-fixed-variant": "#802a0d",
+                    "on-tertiary-container": "#176a6b",
+                    "outline-variant": "#4c463e",
+                    "outline": "#978f86",
+                    "surface-container-highest": "#363433",
+                    "primary-fixed": "#f0e0cc",
+                    "on-secondary-container": "#ff9b7d",
+                    "error": "#ffb4ab",
+                    "on-primary-fixed-variant": "#4f4537",
+                    "tertiary": "#d9fffe",
+                    "secondary": "#ffb59f",
+                    "on-tertiary-fixed": "#002020",
+                    "on-surface": "#e7e1df",
+                    "primary-container": "#e8d9c5",
+                    "on-tertiary": "#003737",
+                    "on-error": "#690005",
+                    "tertiary-fixed": "#a6efef",
+                    "on-primary-container": "#695e4e",
+                    "surface-variant": "#363433",
+                    "on-surface-variant": "#cec5ba",
+                    "inverse-on-surface": "#32302e",
+                    "on-secondary-fixed": "#3a0a00",
+                    "on-secondary": "#5e1600",
+                    "surface-container-lowest": "#0f0e0d",
+                    "surface-container-low": "#1d1b1a",
+                    "surface-container": "#211f1e",
+                    "secondary-container": "#802a0d",
+                    "background": "#141312"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "margin-desktop": "64px",
+                    "sidebar-width": "280px",
+                    "unit": "8px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "label-caps": ["Space Grotesk"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"],
+                    "headline-md": ["Epilogue"],
+                    "headline-lg": ["Epilogue"],
+                    "display-xl": ["Epilogue"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.15em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-md": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-xl": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="font-body-md text-on-surface selection:bg-secondary selection:text-on-secondary">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 h-16 bg-surface/60 backdrop-blur-xl rounded-full mt-4 mx-auto max-w-5xl border-t border-l border-outline-variant/10 shadow-[0_0_15px_rgba(255,246,238,0.05)]">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md tracking-tighter text-primary">QueueUp</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Lobbies</a>
+<a class="font-label-caps text-label-caps text-primary border-b-2 border-secondary pb-1 transition-colors duration-300" href="#">Games</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Rankings</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Community</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer active:scale-95 transition-transform" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-primary cursor-pointer active:scale-95 transition-transform" data-icon="person">person</span>
+</div>
+</nav>
+<!-- Side Navigation Bar -->
+<aside class="fixed left-0 top-0 h-full z-40 flex flex-col pt-24 pb-8 bg-surface-container-low w-sidebar-width border-r border-outline-variant/10 shadow-xl hidden md:flex">
+<div class="px-6 mb-10 flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest overflow-hidden border border-outline-variant/20">
+<img class="w-full h-full object-cover" data-alt="A cinematic close-up of a futuristic gamer profile avatar, featuring a sleek digital interface overlay on a dark, stylized portrait. The lighting is low-key with sharp cyan and muted coral rim lights, reflecting a high-tech gaming environment. The overall aesthetic is dark, premium, and sophisticated, consistent with a high-fidelity game launcher interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9q2iVf1w6vmZpZNGZQX-5zZSIYVWI0YOvEhV84erji6wx6HF4oRZ-KoUneSeJhLTDg2NXEapst-RifVpE_KMUfKELUC2Bszqb-FzYX7MyHLF05AnrZJw1Czm2HC_VWC7YLkXL5H1_orSuqbihRpTyG0M_mp5vPHEZcD4z141DWhFt3GAxNy4CQ8mlXRPdDZCwA5WrG1bfHMrKeXEFc4Igk65BBrE7_aGjKOkDEplA2VUmUv3AWKk9s-jojupR4ykrvASXU0eOVGI"/>
+</div>
+<div>
+<h4 class="font-label-caps text-label-caps text-primary">Commander</h4>
+<p class="font-label-caps text-[10px] text-secondary">[LVL 42]</p>
+</div>
+</div>
+<nav class="flex flex-col flex-1">
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-caps text-label-caps">Squads</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-caps text-label-caps">Direct Messages</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 bg-secondary-container/20 text-secondary border-r-4 border-secondary group" href="#">
+<span class="material-symbols-outlined" data-icon="sensors">sensors</span>
+<span class="font-label-caps text-label-caps">Activity</span>
+</a>
+</nav>
+<div class="px-6 mt-auto">
+<button class="w-full py-4 bg-secondary text-on-secondary font-label-caps text-label-caps rounded-lg hover:brightness-110 transition-all shadow-[0_0_15px_rgba(255,181,159,0.15)]">
+                New Squad
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:pl-sidebar-width pt-32 pb-24">
+<!-- Hero Section -->
+<section class="relative w-full px-margin-desktop mb-16 h-[500px]">
+<div class="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-outline-variant/10">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="A sprawling cinematic concept art piece featuring legendary heroes in a high-stakes battle pose, set against a dark, cosmic cityscape. The environment is bathed in atmospheric glows of muted coral and soft teal, with dynamic lightning effects streaking across a deep navy sky. The visual style is rich with texture and depth, echoing a prestigious, immersive gaming universe with cinematic lens flares and dramatic shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVPnD_mHaqy1q7r9assxpeYmbBDPUf37ujHwGbEBEHOGK-Dx8qG2_Cq5Vr6JQF8QK1EjbHKL8dUgVXkqOuYFANDgPyrdfl0TikHrKT85NmkrH2KEiXa5s2Arg0ix6qJ1jRffU6t8DLRPbT1qJapLiYFLKKa1w9uKs5WNn2n5Mz2zWWhDPjuOa8soWln7m3Z1cZXrO5XmFJnIU9nKNQIX7H4e71c_uGt2pitXj1UOOBAKJrFBl0srtEWy9ug50Tvc0cWBPePFCJxLA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent"></div>
+<div class="absolute bottom-12 left-12 right-12 flex flex-col md:flex-row justify-between items-end gap-8">
+<div class="max-w-2xl">
+<div class="flex gap-2 mb-4">
+<span class="px-3 py-1 glass-card rounded font-label-caps text-[10px] text-tertiary border border-tertiary/20">TRENDING #1</span>
+<span class="px-3 py-1 glass-card rounded font-label-caps text-[10px] text-secondary border border-secondary/20">COMPETITIVE</span>
+</div>
+<h1 class="font-display-xl text-display-xl text-primary drop-shadow-lg">Marvel Rivals</h1>
+<p class="mt-4 font-body-lg text-body-lg text-on-surface-variant max-w-xl">Unleash the ultimate team-based 6v6 combat. Assemble your squad of iconic heroes and villains for high-stakes tactical warfare across the multiverse.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-10 py-5 bg-primary text-on-primary font-label-caps text-label-caps rounded hover:scale-105 transition-transform">JOIN LOBBY</button>
+<button class="px-10 py-5 glass-card text-primary font-label-caps text-label-caps rounded border border-primary/20 hover:bg-white/5 transition-all">FOLLOWING</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats Bento Grid -->
+<section class="px-margin-desktop mb-24 grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="glass-card p-8 rounded-2xl col-span-1 border border-outline-variant/10">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-2">ACTIVE LOBBIES</p>
+<h2 class="font-headline-lg text-headline-lg text-primary">1,284</h2>
+<div class="mt-4 h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-3/4 shadow-[0_0_10px_rgba(255,181,159,0.5)]"></div>
+</div>
+<p class="mt-2 font-label-caps text-[10px] text-secondary">+12% FROM LAST HOUR</p>
+</div>
+<div class="glass-card p-8 rounded-2xl col-span-1 border border-outline-variant/10">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-2">AVERAGE RANK</p>
+<h2 class="font-headline-lg text-headline-lg text-tertiary">PLAT III</h2>
+<div class="flex gap-1 mt-4">
+<div class="w-4 h-4 rounded-sm bg-tertiary/20"></div>
+<div class="w-4 h-4 rounded-sm bg-tertiary/40"></div>
+<div class="w-4 h-4 rounded-sm bg-tertiary"></div>
+<div class="w-4 h-4 rounded-sm bg-tertiary/20"></div>
+</div>
+<p class="mt-2 font-label-caps text-[10px] text-tertiary">TOP 15% OF PLAYERS</p>
+</div>
+<div class="glass-card p-8 rounded-2xl col-span-2 border border-outline-variant/10 flex flex-col justify-between">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-2">COMMUNITY MOOD</p>
+<div class="flex items-center gap-6">
+<h2 class="font-headline-lg text-headline-lg text-primary">ELECTRIC</h2>
+<span class="material-symbols-outlined text-4xl text-secondary" data-icon="bolt">bolt</span>
+</div>
+</div>
+<div class="flex gap-4 items-center">
+<div class="flex -space-x-3">
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-surface-variant"></div>
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-surface-variant"></div>
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-surface-variant"></div>
+</div>
+<p class="font-body-md text-on-surface-variant">4.2k players discussing balance patch v1.0.4</p>
+</div>
+</div>
+</section>
+<!-- Featured Squads & Activity -->
+<section class="px-margin-desktop grid grid-cols-1 lg:grid-cols-3 gap-12">
+<!-- Featured Squads -->
+<div class="lg:col-span-2">
+<div class="flex justify-between items-center mb-8">
+<h3 class="font-headline-md text-headline-md text-primary">Featured Squads</h3>
+<a class="font-label-caps text-label-caps text-secondary border-b border-secondary/50" href="#">VIEW ALL</a>
+</div>
+<div class="space-y-4">
+<!-- Squad Card 1 -->
+<div class="glass-card p-6 rounded-xl border border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-6 scanning-hover transition-all">
+<div class="flex items-center gap-6">
+<div class="w-16 h-16 rounded-lg bg-surface-container-highest overflow-hidden border border-outline-variant/10">
+<img class="w-full h-full object-cover" data-alt="A macro shot of a sleek, illuminated mechanical keyboard with soft teal backlighting. The image is taken at a shallow depth of field, focusing on a few keys, with a dark, atmospheric background of a gaming desk setup. The aesthetic is clean, technical, and high-end, representing a competitive gaming squad's dedication to quality equipment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5nCRojnSiEIbsidJ8lrsn04jluEQ6CSWKn35PjuuXn0XSWdo515wr8PSDg3uL-3D-w7mvTRmFtio2DcUBxrAsbk8yPoi_A9v3liclvk_Zx2R4Xd-uLlilv9p-5jvMcmhOG-qzjMLF9e8L63XiYFCvXqnYYNkFJ5lRay5DfGIFFvNya6Q1jBttuftBPKlI5iypvMjoK1hLea1_9O932-lezJ63G_Uhk8Z7gRXXf11PWcVOJqAcXgImYukiPVy_QaMEUO7iSK4mMb4"/>
+</div>
+<div>
+<h4 class="font-headline-md text-[20px] text-primary">PHOENIX PROTOCOL</h4>
+<div class="flex gap-3 mt-1">
+<span class="font-label-caps text-[10px] text-secondary">[LFM]</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">RANK: DIAMOND+</span>
+<span class="font-label-caps text-[10px] text-tertiary">ROLES: DPS</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="text-right">
+<p class="font-label-caps text-[10px] text-on-surface-variant">MEMBERS</p>
+<p class="font-headline-md text-[18px] text-primary">5/6</p>
+</div>
+<button class="px-6 py-3 bg-secondary text-on-secondary font-label-caps text-label-caps rounded hover:brightness-110 transition-all">APPLY</button>
+</div>
+</div>
+<!-- Squad Card 2 -->
+<div class="glass-card p-6 rounded-xl border border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-6 scanning-hover transition-all">
+<div class="flex items-center gap-6">
+<div class="w-16 h-16 rounded-lg bg-surface-container-highest overflow-hidden border border-outline-variant/10">
+<img class="w-full h-full object-cover" data-alt="An abstract digital render of floating geometric shards in a deep navy void, illuminated by intense sparks of coral orange light. The scene feels energetic and fragmented, symbolizing a high-speed gaming environment. The lighting is dramatic and cinematic, with sharp highlights and deep, velvety shadows that give the image a premium feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHGrwae4G2AYTEvr0doBxNx2nLVs7NQDsg3vh-ceuMWCHdrZ0nxjrKmtYWBeSanzjhccSQj7zlad2r_ECJBVAjARxwcqzJb7BsAnqyRThxRZH33nHvhLmZkuncxTCScfOxI6eMmMqA8FB7UDC-7KKkfQdoJ0Rf6zl019ZBvuREv-TLXs858yogGjm0lS9kxCD4_faqephed_544Wyo0SX2oks_Di7IhEQBIeX77cE1LPvl_NtTiA2FMeWa0ZpMcauVhTjHIdSXMtI"/>
+</div>
+<div>
+<h4 class="font-headline-md text-[20px] text-primary">VOID RUNNERS</h4>
+<div class="flex gap-3 mt-1">
+<span class="font-label-caps text-[10px] text-secondary">[LFM]</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">RANK: GOLD III</span>
+<span class="font-label-caps text-[10px] text-tertiary">ROLES: SUPPORT</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="text-right">
+<p class="font-label-caps text-[10px] text-on-surface-variant">MEMBERS</p>
+<p class="font-headline-md text-[18px] text-primary">5/6</p>
+</div>
+<button class="px-6 py-3 bg-secondary text-on-secondary font-label-caps text-label-caps rounded hover:brightness-110 transition-all">APPLY</button>
+</div>
+</div>
+<!-- Squad Card 3 -->
+<div class="glass-card p-6 rounded-xl border border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-6 scanning-hover transition-all">
+<div class="flex items-center gap-6">
+<div class="w-16 h-16 rounded-lg bg-surface-container-highest overflow-hidden border border-outline-variant/10">
+<img class="w-full h-full object-cover" data-alt="A cinematic low-angle shot of a high-tech server room with glowing blue status lights reflected on a dark, polished floor. The environment is clean, professional, and slightly futuristic, with a focus on precision and high-performance technology. The lighting is moody and focused, with a deep navy and soft teal color palette that feels immersive." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHrL2tKxfHMZ6ek0DlrljPU-clqvCTY304ECCzbh6qwSPOt2kNhj2P7Hqxnsw0g1OnwoXbuvoyAtGfCdG1C00BOSMb327FxsnaWkUqC4ppaB2SzBK_lLsluo0gB0uOdFIBrW8E4lmPM4rc8C4eARqBqM4ug6rNYZrhbtaWJxyHoNDSGlxDxmEnteuUldz_YyyLh7jc5W7SzOix5S4FDhO10bFRc_NkBJ0M-qKLJj3ufaPZIxlEZ2ahe7jqnBFyuj8XAEVF-QgcRZg"/>
+</div>
+<div>
+<h4 class="font-headline-md text-[20px] text-primary">NEXUS VANGUARD</h4>
+<div class="flex gap-3 mt-1">
+<span class="font-label-caps text-[10px] text-secondary">[LFM]</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">RANK: MASTER</span>
+<span class="font-label-caps text-[10px] text-tertiary">ROLES: FLEX</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="text-right">
+<p class="font-label-caps text-[10px] text-on-surface-variant">MEMBERS</p>
+<p class="font-headline-md text-[18px] text-primary">5/6</p>
+</div>
+<button class="px-6 py-3 bg-secondary text-on-secondary font-label-caps text-label-caps rounded hover:brightness-110 transition-all">APPLY</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Social Activity Feed -->
+<div class="lg:col-span-1">
+<div class="flex justify-between items-center mb-8">
+<h3 class="font-headline-md text-[24px] text-primary">Social Feed</h3>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer" data-icon="refresh">refresh</span>
+</div>
+<div class="glass-card rounded-2xl border border-outline-variant/10 divide-y divide-outline-variant/10 overflow-hidden">
+<div class="p-6 scanning-hover transition-all">
+<div class="flex gap-4 items-start">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/20 flex items-center justify-center border border-tertiary/20">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="trophy">trophy</span>
+</div>
+<div>
+<p class="font-body-md text-on-surface text-[14px]"><strong class="text-primary">Ghost_99</strong> just climbed to <span class="text-tertiary">Diamond I</span> in Rivals!</p>
+<p class="mt-1 font-label-caps text-[10px] text-on-surface-variant uppercase">2 MINUTES AGO</p>
+</div>
+</div>
+</div>
+<div class="p-6 scanning-hover transition-all">
+<div class="flex gap-4 items-start">
+<div class="w-10 h-10 rounded-full bg-secondary-container/20 flex items-center justify-center border border-secondary/20">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="forum">forum</span>
+</div>
+<div>
+<p class="font-body-md text-on-surface text-[14px]"><strong class="text-primary">Squad Alpha</strong> is recruiting for tonight's tournament.</p>
+<p class="mt-1 font-label-caps text-[10px] text-on-surface-variant uppercase">15 MINUTES AGO</p>
+</div>
+</div>
+</div>
+<div class="p-6 scanning-hover transition-all">
+<div class="flex gap-4 items-start">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center border border-outline-variant/20">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="groups">groups</span>
+</div>
+<div>
+<p class="font-body-md text-on-surface text-[14px]"><strong class="text-primary">Z-Tactics</strong> just formed a new training squad.</p>
+<p class="mt-1 font-label-caps text-[10px] text-on-surface-variant uppercase">1 HOUR AGO</p>
+</div>
+</div>
+</div>
+<div class="p-6 scanning-hover transition-all">
+<div class="flex gap-4 items-start">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/20 flex items-center justify-center border border-tertiary/20">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="videogame_asset">videogame_asset</span>
+</div>
+<div>
+<p class="font-body-md text-on-surface text-[14px]"><strong class="text-primary">Marvel Rivals</strong> official update: Season 1 Launching soon.</p>
+<p class="mt-1 font-label-caps text-[10px] text-on-surface-variant uppercase">3 HOURS AGO</p>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-4 glass-card text-on-surface-variant font-label-caps text-label-caps rounded-xl hover:text-primary transition-colors border border-outline-variant/10">
+                    VIEW FULL FEED
+                </button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-4 bg-surface-container-lowest border-t border-outline-variant/5">
+<span class="font-label-caps text-label-caps text-primary/50">QUEUEUP</span>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase">© 2024 QUEUEUP PROTOCOL. ALL RIGHTS RESERVED.</p>
+<div class="flex gap-6">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Terms</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Privacy</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Status</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Documentation</a>
+</div>
+</footer>
+</body></html>

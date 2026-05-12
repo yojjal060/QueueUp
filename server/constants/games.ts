@@ -18,7 +18,7 @@ export const GAMES: Record<string, GameConfig> = {
     id: "PUBG_MOBILE",
     name: "PUBG Mobile",
     shortName: "PUBG",
-    icon: "🎯",
+    icon: "PM",
     maxPlayers: 4,
     ranks: [
       "BRONZE",
@@ -37,7 +37,7 @@ export const GAMES: Record<string, GameConfig> = {
     id: "MARVEL_RIVALS",
     name: "Marvel Rivals",
     shortName: "Marvel",
-    icon: "🦸",
+    icon: "MR",
     maxPlayers: 6,
     ranks: [
       "BRONZE_III",

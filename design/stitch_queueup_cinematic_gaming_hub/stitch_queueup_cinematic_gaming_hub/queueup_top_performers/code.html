@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>QueueUp | The Inner Sanctum</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&amp;family=Hanken+Grotesk:wght@400;500&amp;family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#8ad3d3",
+                    "inverse-primary": "#675d4d",
+                    "on-primary-fixed": "#221a0e",
+                    "tertiary-container": "#9ee8e8",
+                    "secondary-fixed-dim": "#ffb59f",
+                    "inverse-surface": "#e7e1df",
+                    "surface": "#141312",
+                    "on-tertiary-fixed-variant": "#004f50",
+                    "surface-container-high": "#2b2a28",
+                    "secondary-fixed": "#ffdbd0",
+                    "surface-tint": "#d3c4b1",
+                    "on-background": "#e7e1df",
+                    "on-primary": "#382f22",
+                    "on-error-container": "#ffdad6",
+                    "error-container": "#93000a",
+                    "surface-dim": "#141312",
+                    "primary": "#fff6ee",
+                    "primary-fixed-dim": "#d3c4b1",
+                    "surface-bright": "#3b3937",
+                    "on-secondary-fixed-variant": "#802a0d",
+                    "on-tertiary-container": "#176a6b",
+                    "outline-variant": "#4c463e",
+                    "outline": "#978f86",
+                    "surface-container-highest": "#363433",
+                    "primary-fixed": "#f0e0cc",
+                    "on-secondary-container": "#ff9b7d",
+                    "error": "#ffb4ab",
+                    "on-primary-fixed-variant": "#4f4537",
+                    "tertiary": "#d9fffe",
+                    "secondary": "#ffb59f",
+                    "on-tertiary-fixed": "#002020",
+                    "on-surface": "#e7e1df",
+                    "primary-container": "#e8d9c5",
+                    "on-tertiary": "#003737",
+                    "on-error": "#690005",
+                    "tertiary-fixed": "#a6efef",
+                    "on-primary-container": "#695e4e",
+                    "surface-variant": "#363433",
+                    "on-surface-variant": "#cec5ba",
+                    "inverse-on-surface": "#32302e",
+                    "on-secondary-fixed": "#3a0a00",
+                    "on-secondary": "#5e1600",
+                    "surface-container-lowest": "#0f0e0d",
+                    "surface-container-low": "#1d1b1a",
+                    "surface-container": "#211f1e",
+                    "secondary-container": "#802a0d",
+                    "background": "#141312"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "margin-desktop": "64px",
+                    "sidebar-width": "280px",
+                    "unit": "8px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "label-caps": ["Space Grotesk"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"],
+                    "headline-md": ["Epilogue"],
+                    "headline-lg": ["Epilogue"],
+                    "display-xl": ["Epilogue"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.15em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-md": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-xl": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .glass-card {
+        background: rgba(33, 31, 30, 0.4);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 246, 238, 0.1);
+        border-left: 1px solid rgba(255, 246, 238, 0.1);
+      }
+      .pedestal-glow {
+        box-shadow: 0 0 30px rgba(255, 181, 159, 0.1);
+      }
+      .scan-line {
+        background: linear-gradient(to right, transparent, rgba(255, 246, 238, 0.05), transparent);
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: -100%;
+      }
+      .hover-scan:hover .scan-line {
+        left: 100%;
+        transition: left 0.6s ease-in-out;
+      }
+      body {
+        background-color: #0f0e0d;
+        background-image: radial-gradient(circle at 50% -20%, #211f1e 0%, #0f0e0d 80%);
+      }
+    </style>
+</head>
+<body class="text-on-surface antialiased">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 h-16 bg-surface/60 backdrop-blur-xl rounded-full mt-4 mx-auto max-w-5xl border-t border-l border-outline-variant/10 shadow-[0_0_15px_rgba(255,246,238,0.05)]">
+<div class="font-headline-md text-headline-md tracking-tighter text-primary dark:text-primary">QueueUp</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Lobbies</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Games</a>
+<a class="font-label-caps text-label-caps text-primary border-b-2 border-secondary pb-1 hover:text-primary transition-colors duration-300" href="#">Rankings</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Community</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">person</span>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full z-40 flex flex-col pt-24 pb-8 bg-surface-container-low dark:bg-surface-container-low border-r border-outline-variant/10 shadow-xl w-sidebar-width hidden lg:flex">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-secondary">
+<img alt="Commander Avatar" class="w-full h-full object-cover" data-alt="A professional close-up portrait of a competitive gamer in a dimly lit studio. The lighting is dominated by cinematic cyan and magenta glows reflecting off their focused expression. They wear a high-tech gaming headset with glowing elements. The overall atmosphere is prestigious and intense, matching a professional gaming client interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjaoJzNKwY9Md8GmTs1O0w-_bCZbNwKSA4vOX0xxFwZdVtZtWSJYTIpOspju1QNLQTP1lASSzvzyJjzjxMpMpSSoy_AxBRolXCwYh_mdqdw_Dxp7-hsxgfw7rvwuzyx-524afggy5fDEMLzvbXQ0D6uDhbj3sIR-NwoFn8VgXK2DXlZz5DoOhnVRHQp0fsU64IxNK0hcTt6h-6-oeOJPDz2bipr51xmLkPQFu3ma4QSYfUJdlgaZmxqYzme_kaeSUvNWpZlyd2yhk"/>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-secondary">Commander</p>
+<p class="font-body-md text-[10px] text-on-surface-variant tracking-widest">[LVL 42]</p>
+</div>
+</div>
+<nav class="flex-1">
+<ul class="space-y-2 px-2">
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</a></li>
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-caps text-label-caps">Squads</span>
+</a></li>
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-label-caps text-label-caps">Direct Messages</span>
+</a></li>
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-variant/40 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a></li>
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg bg-secondary-container/20 text-secondary border-r-4 border-secondary group" href="#">
+<span class="material-symbols-outlined">sensors</span>
+<span class="font-label-caps text-label-caps">Activity</span>
+</a></li>
+</ul>
+</nav>
+<div class="px-4">
+<button class="w-full py-4 bg-secondary text-on-secondary font-label-caps text-label-caps rounded-lg hover:brightness-110 transition-all shadow-[0_0_20px_rgba(255,181,159,0.15)]">
+                New Squad
+            </button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="lg:ml-sidebar-width pt-32 pb-24 px-margin-desktop min-h-screen">
+<header class="mb-16">
+<div class="flex items-center gap-4 mb-2">
+<div class="h-px w-12 bg-secondary/50"></div>
+<span class="font-label-caps text-label-caps text-secondary tracking-[0.3em]">ELITE RANKINGS</span>
+</div>
+<h1 class="font-display-xl text-display-xl text-primary tracking-tighter">The Inner Sanctum</h1>
+</header>
+<!-- Top 3 Pedestals -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-8 items-end mb-24 max-w-6xl mx-auto">
+<!-- Rank 2 -->
+<div class="order-2 md:order-1 flex flex-col items-center">
+<div class="relative group cursor-pointer w-full">
+<div class="glass-card pedestal-glow p-8 rounded-xl relative overflow-hidden text-center h-[320px] flex flex-col justify-end transition-transform hover:-translate-y-2">
+<div class="scan-line"></div>
+<div class="absolute -top-12 left-1/2 -translate-x-1/2 w-32 h-32 rounded-full border-4 border-outline-variant/30 overflow-hidden shadow-2xl">
+<img alt="Player 2" class="w-full h-full object-cover" data-alt="A hyper-realistic cinematic portrait of a pro gamer with intense focus, illuminated by subtle atmospheric orange light against a dark, gritty gaming arena background. The image has high textural detail and film grain, emphasizing a prestigious competitive spirit with a focus on shadow and highlight contrast." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAPj5JwMhpknD74pSx4mophhe705VB2jlDcMbIHW5ZhPtHrKY2b-usfMyd69JUt7nsTpz7bHkcfmCrcCA5oXOfxZ4VwZvc-SkbVTkrOyVBlKdYEHfHCKOzIZyXTqpkXYLw3gOXjRynQck6FMZn-O1KeXvA0owB-4ekiQX-0VCnGGUJG7CH6Xut37kRUAZhvvEWwXfXGa_cl4uBA2ZNSIBfbh48ruezOrF3LljUJu36SjHQ2ho8FYC6Fhri960Nyx-s9wbas1gDGKc"/>
+</div>
+<div class="mb-4">
+<span class="font-label-caps text-[10px] text-secondary tracking-widest block mb-1">RANK 02</span>
+<h2 class="font-headline-md text-headline-md text-primary">Kaelith_V</h2>
+<p class="font-body-md text-on-surface-variant">Wraith Protocol</p>
+</div>
+<div class="flex justify-center gap-6 pt-4 border-t border-outline-variant/20">
+<div><p class="font-label-caps text-[10px] text-on-surface-variant">WIN RATE</p><p class="font-label-caps text-secondary">78.4%</p></div>
+<div><p class="font-label-caps text-[10px] text-on-surface-variant">COMMENDS</p><p class="font-label-caps text-secondary">1.2K</p></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Rank 1 -->
+<div class="order-1 md:order-2 flex flex-col items-center">
+<div class="relative group cursor-pointer w-full">
+<div class="glass-card pedestal-glow p-10 rounded-xl relative overflow-hidden text-center h-[400px] flex flex-col justify-end border-secondary/30 transition-transform hover:-translate-y-2">
+<div class="scan-line"></div>
+<div class="absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full border-4 border-secondary overflow-hidden shadow-[0_0_40px_rgba(255,181,159,0.3)]">
+<img alt="Player 1" class="w-full h-full object-cover" data-alt="A stylized digital art character portrait of a high-tier cybernetic athlete. They are surrounded by floating data particles and soft teal atmospheric glows. The lighting is sophisticated and multi-layered, highlighting futuristic metallic armor details. The background is a deep charcoal blue with subtle technical schematics visible through the bokeh." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfK4Lrk8ElvawU2GylocXYtjbaJpuVfTeK3fBxPXN2uzH5GFYUm6F4hFk6l7hDGJ9sGGgx5M9S9wKxhpQBzjcIUdn99Xnd2eJKl7VMDxAYWiK1WwcPKMSPRmdblLR7wDy1hUFT_YlsgfocA51y1OoVtmbe2Ruy9bja8JuPWtUjClknESC1jJDQQFMUwjppdIWPNB_QsIkjVn7cxRs-wiqkaLtsmMUAgojbcucABAzWjYTXd-dxKqfbyw4DJS9GOZuFFJ22B9vnpfM"/>
+</div>
+<div class="absolute top-4 right-4">
+<span class="material-symbols-outlined text-secondary scale-150" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div class="mb-6">
+<span class="font-label-caps text-[12px] text-secondary tracking-[0.4em] block mb-2 underline underline-offset-8">ABSOLUTE APEX</span>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tighter">Z3R0_DAY</h2>
+<p class="font-body-lg text-on-surface-variant">Global Vanguard</p>
+</div>
+<div class="flex justify-center gap-8 pt-6 border-t border-outline-variant/30">
+<div><p class="font-label-caps text-label-caps text-on-surface-variant">WIN RATE</p><p class="font-headline-md text-secondary">82.1%</p></div>
+<div><p class="font-label-caps text-label-caps text-on-surface-variant">COMMENDS</p><p class="font-headline-md text-secondary">4.8K</p></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Rank 3 -->
+<div class="order-3 md:order-3 flex flex-col items-center">
+<div class="relative group cursor-pointer w-full">
+<div class="glass-card pedestal-glow p-8 rounded-xl relative overflow-hidden text-center h-[280px] flex flex-col justify-end transition-transform hover:-translate-y-2">
+<div class="scan-line"></div>
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 w-28 h-28 rounded-full border-4 border-outline-variant/20 overflow-hidden shadow-xl">
+<img alt="Player 3" class="w-full h-full object-cover" data-alt="A cinematic, low-light portrait of a digital warrior in a high-tech gaming room. The ambient light is a deep, warm cream and dusty orange, casting dramatic shadows. The focus is sharp on the eyes and a sleek headset. The background shows blurred high-end PC hardware components emitting a soft ambient glow." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHVQOg66t2RzLh6lVmMVEEMtM70ifP1A7XIKLeuDdWVr8UTn0kbJiakPjxH3dosK8_ixlcevwWQBX7VldRire086H9qRQwLwdj7jyYxcuLxnRJJwGR6YsAtDHXS72VUJzQmAL24fyHpZQ4eHq9fdRUIJS2fBi-mAG4fKtMxc6q09iUIInPqZctlhUjJTalXW1iPbHbUdvSTKvVVgpzoSNLL7WA_2jctCLc0FoHXfLX7hUbpeNqEeku2j0ZuLyOQPpcuM-iX7xOguo"/>
+</div>
+<div class="mb-4">
+<span class="font-label-caps text-[10px] text-secondary tracking-widest block mb-1">RANK 03</span>
+<h2 class="font-headline-md text-headline-md text-primary">S_Specter</h2>
+<p class="font-body-md text-on-surface-variant">Nebula Drift</p>
+</div>
+<div class="flex justify-center gap-6 pt-4 border-t border-outline-variant/20">
+<div><p class="font-label-caps text-[10px] text-on-surface-variant">WIN RATE</p><p class="font-label-caps text-secondary">76.9%</p></div>
+<div><p class="font-label-caps text-[10px] text-on-surface-variant">COMMENDS</p><p class="font-label-caps text-secondary">842</p></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Global Rankings Table -->
+<section class="max-w-6xl mx-auto">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Global Rankings</h3>
+<p class="font-body-md text-on-surface-variant">Live updates from the QueueUp Protocol.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2 border border-outline-variant/30 font-label-caps text-label-caps text-on-surface hover:bg-surface-variant/40 transition-all">FILTER</button>
+<button class="px-6 py-2 border border-outline-variant/30 font-label-caps text-label-caps text-on-surface hover:bg-surface-variant/40 transition-all">SEASON 4</button>
+</div>
+</div>
+<div class="glass-card rounded-xl overflow-hidden border border-outline-variant/10">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high/50 border-b border-outline-variant/20">
+<th class="p-6 font-label-caps text-label-caps text-on-surface-variant">RANK</th>
+<th class="p-6 font-label-caps text-label-caps text-on-surface-variant">PLAYER</th>
+<th class="p-6 font-label-caps text-label-caps text-on-surface-variant">MAIN GAME</th>
+<th class="p-6 font-label-caps text-label-caps text-on-surface-variant">WIN RATE</th>
+<th class="p-6 font-label-caps text-label-caps text-on-surface-variant">COMMENDATIONS</th>
+<th class="p-6 font-label-caps text-label-caps text-on-surface-variant">STATUS</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover-scan relative group hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-6"><span class="font-label-caps text-primary">#04</span></td>
+<td class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center font-label-caps text-[10px] text-on-surface">NV</div>
+<span class="font-body-md font-semibold text-primary">N1ght_Viper</span>
+</div>
+</td>
+<td class="p-6"><span class="font-body-md text-on-surface-variant">Hyper Scape</span></td>
+<td class="p-6"><span class="font-label-caps text-secondary">74.2%</span></td>
+<td class="p-6"><span class="font-body-md text-on-surface-variant">729</span></td>
+<td class="p-6"><span class="font-label-caps text-[10px] text-tertiary-fixed-dim bg-on-tertiary/20 px-2 py-1 rounded tracking-widest">[RDY]</span></td>
+</tr>
+<tr class="hover-scan relative group hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-6"><span class="font-label-caps text-primary">#05</span></td>
+<td class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center font-label-caps text-[10px] text-on-surface">CC</div>
+<span class="font-body-md font-semibold text-primary">CloudChaser</span>
+</div>
+</td>
+<td class="p-6"><span class="font-body-md text-on-surface-variant">Apex Legends</span></td>
+<td class="p-6"><span class="font-label-caps text-secondary">72.8%</span></td>
+<td class="p-6"><span class="font-body-md text-on-surface-variant">645</span></td>
+<td class="p-6"><span class="font-label-caps text-[10px] text-on-secondary-container bg-secondary-container/20 px-2 py-1 rounded tracking-widest">[LFM]</span></td>
+</tr>
+<tr class="hover-scan relative group hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-6"><span class="font-label-caps text-primary">#06</span></td>
+<td class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center font-label-caps text-[10px] text-on-surface">IX</div>
+<span class="font-body-md font-semibold text-primary">IronXenon</span>
+</div>
+</td>
+<td class="p-6"><span class="font-body-md text-on-surface-variant">Valorant</span></td>
+<td class="p-6"><span class="font-label-caps text-secondary">71.5%</span></td>
+<td class="p-6"><span class="font-body-md text-on-surface-variant">512</span></td>
+<td class="p-6"><span class="font-label-caps text-[10px] text-tertiary-fixed-dim bg-on-tertiary/20 px-2 py-1 rounded tracking-widest">[RDY]</span></td>
+</tr>
+<tr class="hover-scan relative group hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-6"><span class="font-label-caps text-primary">#07</span></td>
+<td class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center font-label-caps text-[10px] text-on-surface">MD</div>
+<span class="font-body-md font-semibold text-primary">Midnight_Dancer</span>
+</div>
+</td>
+<td class="p-6"><span class="font-body-md text-on-surface-variant">Overwatch 2</span></td>
+<td class="p-6"><span class="font-label-caps text-secondary">70.1%</span></td>
+<td class="p-6"><span class="font-body-md text-on-surface-variant">488</span></td>
+<td class="p-6"><span class="font-label-caps text-[10px] text-on-surface-variant/40 bg-white/5 px-2 py-1 rounded tracking-widest">[OFF]</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-4 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/5">
+<div class="font-label-caps text-label-caps text-primary/50 tracking-widest">QUEUEUP PROTOCOL</div>
+<div class="flex gap-8">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Terms</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Privacy</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Status</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#">Documentation</a>
+</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant opacity-60">
+            © 2024 QUEUEUP PROTOCOL. ALL RIGHTS RESERVED.
+        </div>
+</footer>
+</body></html>

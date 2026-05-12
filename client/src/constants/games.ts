@@ -1,0 +1,57 @@
+import type { GameConfig, GamesResponse } from "../types/api";
+
+export const FALLBACK_GAMES: GamesResponse = {
+  PUBG_MOBILE: {
+    id: "PUBG_MOBILE",
+    name: "PUBG Mobile",
+    shortName: "PUBG",
+    icon: "PM",
+    maxPlayers: 4,
+    ranks: [
+      "BRONZE",
+      "SILVER",
+      "GOLD",
+      "PLATINUM",
+      "DIAMOND",
+      "CROWN",
+      "ACE",
+      "ACE_MASTER",
+      "ACE_DOMINATOR",
+      "CONQUEROR",
+    ],
+  },
+  MARVEL_RIVALS: {
+    id: "MARVEL_RIVALS",
+    name: "Marvel Rivals",
+    shortName: "Marvel",
+    icon: "MR",
+    maxPlayers: 6,
+    ranks: [
+      "BRONZE_III",
+      "BRONZE_II",
+      "BRONZE_I",
+      "SILVER_III",
+      "SILVER_II",
+      "SILVER_I",
+      "GOLD_III",
+      "GOLD_II",
+      "GOLD_I",
+      "PLATINUM_III",
+      "PLATINUM_II",
+      "PLATINUM_I",
+      "DIAMOND_III",
+      "DIAMOND_II",
+      "DIAMOND_I",
+      "GRANDMASTER_III",
+      "GRANDMASTER_II",
+      "GRANDMASTER_I",
+      "CELESTIAL_III",
+      "CELESTIAL_II",
+      "CELESTIAL_I",
+      "ETERNITY",
+      "ONE_ABOVE_ALL",
+    ],
+  },
+};
+
+export const FALLBACK_GAME_LIST: GameConfig[] = Object.values(FALLBACK_GAMES);
