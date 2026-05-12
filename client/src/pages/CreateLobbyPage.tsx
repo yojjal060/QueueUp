@@ -1,9 +1,4 @@
-import {
-  startTransition,
-  useMemo,
-  useState,
-  type FormEvent,
-} from "react";
+import { startTransition, useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { SessionPanel } from "../components/SessionPanel";
 import { StatusBanner } from "../components/StatusBanner";
@@ -32,7 +27,8 @@ export function CreateLobbyPage() {
     [games, resolvedGameId]
   );
   const presentation = getGamePresentation(selectedGame?.id);
-  const previewTitle = title.trim() || "Night push protocol";
+  const previewTitle = title.trim() || "Ranked squad room";
+  const formDisabled = !session || !selectedGame || isLoading;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,20 +70,19 @@ export function CreateLobbyPage() {
     }
   }
 
-  const formDisabled = !session || !selectedGame || isLoading;
-
   return (
-    <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-      <section className="glass-panel p-6 sm:p-7">
-        <p className="eyebrow">New squad operation</p>
-        <h1 className="font-display mt-3 max-w-3xl text-5xl leading-[0.95] tracking-[-0.05em] text-white">
-          Draft the room before the first teammate arrives.
-        </h1>
-        <p className="mt-3 max-w-3xl text-white/67">
-          Public rooms stay discoverable, private rooms stay invite-first, and the
-          rank gate stays visible from the first second. Shape the lobby once, then
-          hand your squad a clean entry point.
-        </p>
+    <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,1.05fr)_420px]">
+      <section>
+        <header className="max-w-3xl">
+          <p className="eyebrow">Create lobby</p>
+          <h1 className="font-display mt-4 text-5xl leading-none text-white sm:text-6xl">
+            Set the room rules once.
+          </h1>
+          <p className="mt-4 text-base leading-7 text-white/64">
+            Keep the form short: title, game, capacity, and the rank context
+            teammates need before they join.
+          </p>
+        </header>
 
         {error ? (
           <div className="mt-6">
@@ -101,16 +96,16 @@ export function CreateLobbyPage() {
           </div>
         ) : null}
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+        <form className="glass-panel mt-8 space-y-6 p-5 sm:p-6" onSubmit={handleSubmit}>
           <label className="block">
-            <span className="mb-2 block font-caps text-[11px] uppercase tracking-[0.24em] text-white/54">
+            <span className="mb-2 block font-caps text-[11px] uppercase text-white/54">
               Lobby title
             </span>
             <input
               className="input-shell"
               disabled={formDisabled}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Late-night Erangel push"
+              placeholder="Late-night ranked push"
               required
               value={title}
             />
@@ -118,7 +113,7 @@ export function CreateLobbyPage() {
 
           <div className="grid gap-5 md:grid-cols-2">
             <label className="block">
-              <span className="mb-2 block font-caps text-[11px] uppercase tracking-[0.24em] text-white/54">
+              <span className="mb-2 block font-caps text-[11px] uppercase text-white/54">
                 Game
               </span>
               <select
@@ -145,7 +140,7 @@ export function CreateLobbyPage() {
             </label>
 
             <label className="block">
-              <span className="mb-2 block font-caps text-[11px] uppercase tracking-[0.24em] text-white/54">
+              <span className="mb-2 block font-caps text-[11px] uppercase text-white/54">
                 Visibility
               </span>
               <select
@@ -162,10 +157,25 @@ export function CreateLobbyPage() {
             </label>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-3">
             <label className="block">
-              <span className="mb-2 block font-caps text-[11px] uppercase tracking-[0.24em] text-white/54">
-                Host rank
+              <span className="mb-2 block font-caps text-[11px] uppercase text-white/54">
+                Max players
+              </span>
+              <input
+                className="input-shell"
+                disabled={formDisabled}
+                max={selectedGame?.maxPlayers ?? 10}
+                min={2}
+                onChange={(event) => setMaxPlayers(Number(event.target.value))}
+                type="number"
+                value={maxPlayers}
+              />
+            </label>
+
+            <label className="block md:col-span-1">
+              <span className="mb-2 block font-caps text-[11px] uppercase text-white/54">
+                Your rank
               </span>
               <select
                 className="input-shell"
@@ -173,7 +183,7 @@ export function CreateLobbyPage() {
                 onChange={(event) => setHostRank(event.target.value)}
                 value={hostRank}
               >
-                <option value="">Prefer not to say</option>
+                <option value="">Hidden</option>
                 {selectedGame?.ranks.map((rank) => (
                   <option key={rank} value={rank}>
                     {formatRank(rank)}
@@ -182,9 +192,9 @@ export function CreateLobbyPage() {
               </select>
             </label>
 
-            <label className="block">
-              <span className="mb-2 block font-caps text-[11px] uppercase tracking-[0.24em] text-white/54">
-                Minimum rank filter
+            <label className="block md:col-span-1">
+              <span className="mb-2 block font-caps text-[11px] uppercase text-white/54">
+                Rank floor
               </span>
               <select
                 className="input-shell"
@@ -202,128 +212,54 @@ export function CreateLobbyPage() {
             </label>
           </div>
 
-          <label className="block">
-            <span className="mb-2 block font-caps text-[11px] uppercase tracking-[0.24em] text-white/54">
-              Max players
-            </span>
-            <input
-              className="input-shell"
-              disabled={formDisabled}
-              max={selectedGame?.maxPlayers ?? 10}
-              min={2}
-              onChange={(event) => setMaxPlayers(Number(event.target.value))}
-              type="number"
-              value={maxPlayers}
-            />
-            <p className="mt-2 text-sm text-white/55">
-              Recommended ceiling for {selectedGame?.name ?? "the selected game"}:{" "}
-              {selectedGame?.maxPlayers ?? 4}
-            </p>
-          </label>
-
-          <div className="flex flex-wrap gap-3">
-            <button className="button-primary" disabled={formDisabled || isSubmitting} type="submit">
-              {isSubmitting ? "Creating lobby..." : "Launch lobby"}
+          <div className="flex flex-wrap gap-3 pt-2">
+            <button
+              className="button-primary"
+              disabled={formDisabled || isSubmitting}
+              type="submit"
+            >
+              {isSubmitting ? "Creating..." : "Launch lobby"}
             </button>
             <Link className="button-secondary" to="/browse">
-              Review live squads
+              Browse first
             </Link>
           </div>
         </form>
       </section>
 
-      <div className="space-y-6">
+      <aside className="space-y-6 lg:sticky lg:top-28 lg:self-start">
         <article
-          className={`hero-shell relative min-h-[420px] overflow-hidden p-6 sm:p-7 ${presentation.heroBackgroundClass}`}
+          className={`hero-shell min-h-[360px] overflow-hidden p-6 ${presentation.heroBackgroundClass}`}
         >
-          <div className="absolute inset-x-[12%] top-16 h-[52%] rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_34%_30%,rgba(158,232,232,0.24),transparent_16%),radial-gradient(circle_at_80%_58%,rgba(255,181,159,0.2),transparent_22%),linear-gradient(160deg,rgba(7,16,20,0.94),rgba(11,18,24,0.84)_46%,rgba(28,17,14,0.92))]" />
-          <div className="relative flex h-full flex-col justify-between">
+          <div className="flex h-full min-h-[310px] flex-col justify-between">
             <div className="flex flex-wrap gap-2">
               <span className={`status-chip ${presentation.accentBorderClass}`}>
                 {selectedGame?.shortName ?? "QueueUp"}
               </span>
               <span className="status-chip">
-                {visibility === "PUBLIC" ? "Public room" : "Private route"}
+                {visibility === "PUBLIC" ? "Public" : "Private"}
               </span>
             </div>
 
             <div>
-              <p className="eyebrow text-[#9ee8e8]">Live preview</p>
-              <h2 className="font-display mt-3 text-4xl leading-none text-white">
+              <p className="eyebrow text-[#9ee8e8]">Preview</p>
+              <h2 className="font-display mt-3 text-4xl leading-tight text-white">
                 {previewTitle}
               </h2>
-              <p className="mt-4 max-w-lg text-sm leading-7 text-white/68">
-                Hosted by{" "}
-                <span className="text-white">
-                  {session?.username ?? "your future callsign"}
-                </span>
-                . {rankFilter ? `${formatRank(rankFilter)} and above.` : "Open rank entry."}{" "}
-                Room code gets minted the moment you publish.
+              <p className="mt-4 text-sm leading-7 text-white/66">
+                {rankFilter ? `${formatRank(rankFilter)} and above.` : "Open rank."}{" "}
+                {maxPlayers} seats max.
               </p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="glass-panel-soft p-4">
-                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
-                  Seats
-                </p>
-                <p className="mt-2 text-2xl text-white">1/{maxPlayers}</p>
-              </div>
-              <div className="glass-panel-soft p-4">
-                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
-                  Host rank
-                </p>
-                <p className="mt-2 text-2xl text-white">{formatRank(hostRank)}</p>
-              </div>
-              <div className="glass-panel-soft p-4">
-                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
-                  Code
-                </p>
-                <p className="mt-2 text-lg tracking-[0.22em] text-white">AUTO</p>
-              </div>
             </div>
           </div>
         </article>
 
         <SessionPanel
           compact
-          title="Activate your callsign"
-          description="Your callsign becomes the host identity for the room. Create or restore it here before you publish."
+          title="Use your callsign"
+          description="Your callsign becomes the host identity shown in the lobby."
         />
-
-        <aside className="glass-panel p-6">
-          <p className="eyebrow">Host notes</p>
-          <div className="mt-5 space-y-4">
-            <div className="glass-panel-soft p-4">
-              <p className="font-caps text-[11px] uppercase tracking-[0.24em] text-[#ffb59f]">
-                Public discovery
-              </p>
-              <p className="mt-2 text-sm leading-6 text-white/68">
-                Public rooms show up in the browse feed with member counts and rank
-                expectations intact.
-              </p>
-            </div>
-            <div className="glass-panel-soft p-4">
-              <p className="font-caps text-[11px] uppercase tracking-[0.24em] text-[#9ee8e8]">
-                Invite-first route
-              </p>
-              <p className="mt-2 text-sm leading-6 text-white/68">
-                Private rooms stay cleaner for friend stacks and tournament prep by
-                moving through a shared code.
-              </p>
-            </div>
-            <div className="glass-panel-soft p-4">
-              <p className="font-caps text-[11px] uppercase tracking-[0.24em] text-[#ffb59f]">
-                Hard rank gate
-              </p>
-              <p className="mt-2 text-sm leading-6 text-white/68">
-                The rank filter is enforced by the backend, so the lobby brief stays
-                honest after it goes live.
-              </p>
-            </div>
-          </div>
-        </aside>
-      </div>
+      </aside>
     </div>
   );
 }

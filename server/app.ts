@@ -4,6 +4,7 @@ import { sessionMiddleware } from "./middleware/session.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import userRoutes from "./routes/userRoutes.js";
 import lobbyRoutes from "./routes/lobbyRoutes.js";
+import { corsOrigin } from "./utils/cors.js";
 
 const app = express();
 
@@ -11,7 +12,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL ?? "http://localhost:5173",
+    origin: corsOrigin,
     credentials: true,
   })
 );

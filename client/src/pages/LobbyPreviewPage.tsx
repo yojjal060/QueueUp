@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
+import { LobbyChat, type ChatSystemMessage } from "../components/LobbyChat";
 import { SessionPanel } from "../components/SessionPanel";
 import { StatusBanner } from "../components/StatusBanner";
 import { useSession } from "../context/useSession";
@@ -38,6 +39,27 @@ interface RoomBanner {
   message: string;
 }
 
+type ChatAckResponse =
+  | { ok: true; data: { message: Message } }
+  | { ok: false; error: { message: string } };
+
+function createSystemMessage(
+  content: string,
+  tone: ChatSystemMessage["tone"] = "info"
+): ChatSystemMessage {
+  const id =
+    typeof window !== "undefined" && window.crypto?.randomUUID
+      ? window.crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  return {
+    id,
+    content,
+    tone,
+    createdAt: new Date().toISOString(),
+  };
+}
+
 function getRoomErrorMessage(error: unknown) {
   if (error instanceof ApiError) {
     return error.message;
@@ -59,6 +81,7 @@ export function LobbyPreviewPage() {
   const { games } = useGames();
   const [lobby, setLobby] = useState<Lobby | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [systemMessages, setSystemMessages] = useState<ChatSystemMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [banner, setBanner] = useState<RoomBanner | null>(
@@ -75,12 +98,15 @@ export function LobbyPreviewPage() {
   const [isJoining, setIsJoining] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
   const [kickingUserId, setKickingUserId] = useState<string | null>(null);
   const [connectionState, setConnectionState] = useState<
     "idle" | "connecting" | "live" | "offline"
   >("idle");
   const [socketError, setSocketError] = useState<string | null>(null);
   const [highlightedMemberIds, setHighlightedMemberIds] = useState<string[]>([]);
+  const socketRef = useRef<QueueUpClientSocket | null>(null);
   const highlightTimersRef = useRef<Map<string, number>>(new Map());
 
   const game = games.find((entry) => entry.id === lobby?.game) ?? null;
@@ -95,6 +121,18 @@ export function LobbyPreviewPage() {
   const canSubscribeToRoom = Boolean(
     session?.sessionToken && viewerMembership && lobby?.isActive
   );
+  const canSendMessages = Boolean(
+    viewerMembership && lobby?.isActive && connectionState === "live"
+  );
+  const chatStatusLabel = !viewerMembership
+    ? "Read-only"
+    : !lobby?.isActive
+      ? "Closed"
+      : connectionState === "live"
+        ? "Live chat"
+        : connectionState === "connecting"
+          ? "Connecting"
+          : "Reconnecting";
   const inviteUrl =
     typeof window === "undefined"
       ? ""
@@ -131,13 +169,23 @@ export function LobbyPreviewPage() {
     highlightTimersRef.current.set(userId, timer);
   });
 
-  const appendMessage = useEffectEvent((message: Message) => {
+  function appendMessage(message: Message) {
     setMessages((current) =>
       current.some((entry) => entry.id === message.id)
         ? current
         : [...current, message]
     );
-  });
+  }
+
+  function appendSystemMessage(
+    content: string,
+    tone: ChatSystemMessage["tone"] = "info"
+  ) {
+    setSystemMessages((current) => [
+      ...current,
+      createSystemMessage(content, tone),
+    ]);
+  }
 
   const handleLobbyUpdated = useEffectEvent((nextLobby: Lobby) => {
     const previousHostId =
@@ -158,6 +206,7 @@ export function LobbyPreviewPage() {
 
     if (nextHost && previousHostId && nextHost.userId !== previousHostId) {
       flashMember(nextHost.userId);
+      appendSystemMessage(`${nextHost.user.username} is now hosting the lobby.`);
       setBanner({
         tone: "info",
         title: "Host updated",
@@ -176,6 +225,10 @@ export function LobbyPreviewPage() {
       }
 
       flashMember(payload.member.userId);
+      appendSystemMessage(
+        `${payload.member.user.username} joined the lobby.`,
+        payload.member.userId === session?.id ? "success" : "info"
+      );
 
       if (payload.member.userId !== session?.id) {
         setBanner({
@@ -204,6 +257,10 @@ export function LobbyPreviewPage() {
         lobby?.members.find((member) => member.userId === payload.newHostId) ?? null;
 
       if (payload.lobbyClosed) {
+        appendSystemMessage(
+          "The lobby closed after the final member left.",
+          "info"
+        );
         setBanner({
           tone: "info",
           title: "Lobby closed",
@@ -215,6 +272,12 @@ export function LobbyPreviewPage() {
       if (payload.newHostId) {
         flashMember(payload.newHostId);
       }
+
+      appendSystemMessage(
+        departingMember
+          ? `${departingMember.user.username} left the lobby.`
+          : "A player left the lobby."
+      );
 
       setBanner({
         tone: "info",
@@ -234,6 +297,7 @@ export function LobbyPreviewPage() {
     }
 
     setLobby((current) => (current ? { ...current, isActive: false } : current));
+    appendSystemMessage("The host closed this lobby.", "info");
     setBanner({
       tone: "info",
       title: "Lobby closed",
@@ -265,6 +329,10 @@ export function LobbyPreviewPage() {
       );
       setConnectionState("idle");
       setSocketError(null);
+      appendSystemMessage(
+        `${payload.kickedByUsername} removed you from this lobby.`,
+        "error"
+      );
       setBanner({
         tone: "info",
         title: "Removed from lobby",
@@ -288,6 +356,9 @@ export function LobbyPreviewPage() {
         }
         return;
       }
+
+      setSystemMessages([]);
+      setChatError(null);
 
       try {
         const [lobbyData, messageData] = await Promise.all([
@@ -338,6 +409,7 @@ export function LobbyPreviewPage() {
     }
 
     const socket = createLobbySocket(session.sessionToken);
+    socketRef.current = socket;
 
     function disconnectSocket(activeSocket: QueueUpClientSocket) {
       if (activeSocket.connected) {
@@ -395,6 +467,9 @@ export function LobbyPreviewPage() {
 
     return () => {
       socket.removeAllListeners();
+      if (socketRef.current === socket) {
+        socketRef.current = null;
+      }
       disconnectSocket(socket);
     };
   }, [
@@ -403,6 +478,49 @@ export function LobbyPreviewPage() {
     normalizedCode,
     session?.sessionToken,
   ]);
+
+  async function handleSendMessage(content: string) {
+    if (!lobby || !viewerMembership || !lobby.isActive) {
+      setChatError("Chat is read-only for this lobby.");
+      return false;
+    }
+
+    const socket = socketRef.current;
+    if (!socket?.connected || connectionState !== "live") {
+      setChatError("Live chat is reconnecting. Try again in a moment.");
+      return false;
+    }
+
+    try {
+      setIsSendingMessage(true);
+      setChatError(null);
+
+      const response = await new Promise<ChatAckResponse>((resolve) => {
+        socket.emit(
+          "chat:message",
+          { lobbyCode: lobby.code, content },
+          (ackResponse) => resolve(ackResponse)
+        );
+      });
+
+      if (!response.ok) {
+        setChatError(response.error.message);
+        return false;
+      }
+
+      appendMessage(response.data.message);
+      return true;
+    } catch (sendError) {
+      setChatError(
+        sendError instanceof Error
+          ? sendError.message
+          : "Could not send this message."
+      );
+      return false;
+    } finally {
+      setIsSendingMessage(false);
+    }
+  }
 
   async function handleJoin() {
     if (!session || !lobby) {
@@ -420,6 +538,7 @@ export function LobbyPreviewPage() {
       );
 
       setLobby(joinedLobby);
+      appendSystemMessage("You joined the lobby.", "success");
       setBanner({
         tone: "success",
         title: "Joined",
@@ -489,6 +608,7 @@ export function LobbyPreviewPage() {
       setIsClosing(true);
       await closeLobbyRequest(lobby.code, session.sessionToken);
       setLobby((current) => (current ? { ...current, isActive: false } : current));
+      appendSystemMessage("You closed the lobby.", "success");
       setBanner({
         tone: "success",
         title: "Lobby closed",
@@ -610,8 +730,6 @@ export function LobbyPreviewPage() {
     );
   }
 
-  const recentMessages = messages.slice(-8);
-
   return (
     <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
       <section className="space-y-6">
@@ -726,169 +844,85 @@ export function LobbyPreviewPage() {
           </div>
         </article>
 
-        <div className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr]">
-          <section className="glass-panel p-6">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="eyebrow">Current roster</p>
-                <h2 className="font-display mt-3 text-3xl text-white">
-                  Everyone in the room
-                </h2>
-              </div>
-              <span className="font-caps text-[11px] uppercase tracking-[0.24em] text-white/42">
-                {lobby.members.length}/{lobby.maxPlayers}
-              </span>
-            </div>
-
-            <div className="mt-5 space-y-3">
-              {lobby.members.map((member) => (
-                <div
-                  className={`member-card glass-panel-soft flex flex-wrap items-center justify-between gap-4 px-4 py-4 ${
-                    highlightedMemberIds.includes(member.userId)
-                      ? "member-card-live"
-                      : ""
-                  }`}
-                  key={member.id}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-[#2b2a28] font-caps text-[11px] uppercase tracking-[0.18em] text-white">
-                      {getInitials(member.user.username)}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-white">
-                        {member.user.username}
-                        {member.userId === session?.id ? " (You)" : ""}
-                      </p>
-                      <p className="text-sm text-white/60">
-                        {member.rank ? formatRank(member.rank) : "Rank hidden"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {member.role === "HOST" ? (
-                      <span className="status-chip border-[#ffb59f]/20 bg-[#802a0d]/16 text-[#fff6ee]">
-                        Host
-                      </span>
-                    ) : (
-                      <span className="status-chip">Member</span>
-                    )}
-                    <span className="status-chip">
-                      {formatRelativeTime(member.joinedAt)}
-                    </span>
-                    {isHost &&
-                    member.role !== "HOST" &&
-                    member.userId !== session?.id &&
-                    lobby.isActive ? (
-                      <button
-                        className="button-ghost"
-                        disabled={kickingUserId === member.userId}
-                        onClick={() =>
-                          void handleKickMember(member.userId, member.user.username)
-                        }
-                        type="button"
-                      >
-                        {kickingUserId === member.userId ? "Removing..." : "Remove"}
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="glass-panel p-6">
-            <p className="eyebrow">Mission parameters</p>
-            <h2 className="font-display mt-3 text-3xl text-white">
-              Room brief and join rules
-            </h2>
-
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div className="glass-panel-soft p-4">
-                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
-                  Visibility
-                </p>
-                <p className="mt-2 text-lg text-white">
-                  {formatVisibility(lobby.visibility)}
-                </p>
-              </div>
-              <div className="glass-panel-soft p-4">
-                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
-                  Game
-                </p>
-                <p className="mt-2 text-lg text-white">
-                  {game?.name ?? formatGameId(lobby.game)}
-                </p>
-              </div>
-              <div className="glass-panel-soft p-4">
-                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
-                  Rank floor
-                </p>
-                <p className="mt-2 text-lg text-white">{formatRank(lobby.rankFilter)}</p>
-              </div>
-              <div className="glass-panel-soft p-4">
-                <p className="font-caps text-[10px] uppercase tracking-[0.24em] text-white/42">
-                  Open seats
-                </p>
-                <p className="mt-2 text-lg text-white">{availableSeats}</p>
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-[24px] border border-white/8 bg-white/4 p-5">
-              <p className="font-caps text-[11px] uppercase tracking-[0.24em] text-[#9ee8e8]">
-                Room brief
-              </p>
-              <p className="mt-3 text-sm leading-7 text-white/68">
-                This is the live room surface for the lobby. Members stay synced
-                in real time, the host role transfers if someone leaves, and the
-                room can be shared or closed directly from here.
-              </p>
-            </div>
-          </section>
-        </div>
-
         <section className="glass-panel p-6">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="eyebrow">Recent transmissions</p>
+              <p className="eyebrow">Current roster</p>
               <h2 className="font-display mt-3 text-3xl text-white">
-                Last room chat activity
+                Everyone in the room
               </h2>
             </div>
-            <span className="font-caps text-[11px] uppercase tracking-[0.24em] text-white/42">
-              {recentMessages.length} visible
+            <span className="font-caps text-[11px] uppercase text-white/42">
+              {lobby.members.length}/{lobby.maxPlayers}
             </span>
           </div>
 
           <div className="mt-5 space-y-3">
-            {recentMessages.length === 0 ? (
-              <div className="glass-panel-soft p-5">
-                <p className="text-sm leading-6 text-white/62">
-                  No chat history yet. Epic 5 will deepen this area, but the room
-                  is already wired to reflect new incoming messages live.
-                </p>
-              </div>
-            ) : (
-              recentMessages.map((message) => (
-                <div className="feed-card glass-panel-soft px-4 py-4" key={message.id}>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#2b2a28] font-caps text-[10px] uppercase tracking-[0.18em] text-white">
-                        {getInitials(message.user.username)}
-                      </div>
-                      <p className="font-semibold text-white">{message.user.username}</p>
-                    </div>
-                    <p className="font-caps text-[10px] uppercase tracking-[0.22em] text-white/40">
-                      {formatRelativeTime(message.createdAt)}
+            {lobby.members.map((member) => (
+              <div
+                className={`member-card glass-panel-soft flex flex-wrap items-center justify-between gap-4 px-4 py-4 ${
+                  highlightedMemberIds.includes(member.userId)
+                    ? "member-card-live"
+                    : ""
+                }`}
+                key={member.id}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-white/10 bg-[#2b2a28] font-caps text-[11px] uppercase text-white">
+                    {getInitials(member.user.username)}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-white">
+                      {member.user.username}
+                      {member.userId === session?.id ? " (You)" : ""}
+                    </p>
+                    <p className="text-sm text-white/60">
+                      {member.rank ? formatRank(member.rank) : "Rank hidden"}
                     </p>
                   </div>
-                  <p className="mt-3 text-sm leading-7 text-white/70">
-                    {message.content}
-                  </p>
                 </div>
-              ))
-            )}
+                <div className="flex flex-wrap items-center gap-2">
+                  {member.role === "HOST" ? (
+                    <span className="status-chip border-[#ffb59f]/20 bg-[#802a0d]/16 text-[#fff6ee]">
+                      Host
+                    </span>
+                  ) : (
+                    <span className="status-chip">Member</span>
+                  )}
+                  <span className="status-chip">
+                    {formatRelativeTime(member.joinedAt)}
+                  </span>
+                  {isHost &&
+                  member.role !== "HOST" &&
+                  member.userId !== session?.id &&
+                  lobby.isActive ? (
+                    <button
+                      className="button-ghost"
+                      disabled={kickingUserId === member.userId}
+                      onClick={() =>
+                        void handleKickMember(member.userId, member.user.username)
+                      }
+                      type="button"
+                    >
+                      {kickingUserId === member.userId ? "Removing..." : "Remove"}
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
+
+        <LobbyChat
+          canSend={canSendMessages}
+          currentUserId={session?.id}
+          isSending={isSendingMessage}
+          messages={messages}
+          onSendMessage={handleSendMessage}
+          sendError={chatError}
+          statusLabel={chatStatusLabel}
+          systemMessages={systemMessages}
+        />
       </section>
 
       <aside className="space-y-6">
@@ -1045,39 +1079,6 @@ export function LobbyPreviewPage() {
           />
         )}
 
-        <div className="glass-panel p-6">
-          <p className="eyebrow">Tactical brief</p>
-          <div className="mt-5 space-y-4">
-            <div className="glass-panel-soft p-4">
-              <p className="font-caps text-[11px] uppercase tracking-[0.24em] text-[#ffb59f]">
-                Invite signal
-              </p>
-              <p className="mt-2 text-sm leading-6 text-white/68">
-                Code {lobby.code} is the direct handoff between host and squad.
-              </p>
-            </div>
-            <div className="glass-panel-soft p-4">
-              <p className="font-caps text-[11px] uppercase tracking-[0.24em] text-[#9ee8e8]">
-                Rank floor
-              </p>
-              <p className="mt-2 text-sm leading-6 text-white/68">
-                {lobby.rankFilter
-                  ? `${formatRank(lobby.rankFilter)} is enforced before the join completes.`
-                  : "No minimum rank is enforced for this room."}
-              </p>
-            </div>
-            <div className="glass-panel-soft p-4">
-              <p className="font-caps text-[11px] uppercase tracking-[0.24em] text-[#ffb59f]">
-                Room state
-              </p>
-              <p className="mt-2 text-sm leading-6 text-white/68">
-                {lobby.isActive
-                  ? `${availableSeats} seats are still open right now.`
-                  : "This lobby has been closed and is now read-only."}
-              </p>
-            </div>
-          </div>
-        </div>
       </aside>
     </div>
   );

@@ -4,6 +4,7 @@ import { AppError, toSocketErrorPayload } from "../middleware/errorHandler.js";
 import * as lobbyService from "../services/lobbyService.js";
 import * as messageService from "../services/messageService.js";
 import * as userService from "../services/userService.js";
+import { corsOrigin } from "../utils/cors.js";
 import type {
   LobbyMemberSnapshot,
   QueueUpSocket,
@@ -281,7 +282,7 @@ function handleDisconnect(socket: QueueUpSocket) {
 function buildSocketServer(httpServer: HttpServer) {
   return new SocketIOServer(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL ?? "http://localhost:5173",
+      origin: corsOrigin,
       methods: ["GET", "POST"],
     },
   }) as QueueUpSocketServer;

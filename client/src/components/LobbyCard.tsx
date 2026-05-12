@@ -16,9 +16,9 @@ export function LobbyCard({ lobby, game }: LobbyCardProps) {
   const visibleMembers = lobby.members.slice(0, 3);
 
   return (
-    <article className="glass-panel scan-surface overflow-hidden p-4 sm:p-5">
+    <article className="glass-panel scan-surface overflow-hidden p-5">
       <div
-        className={`overflow-hidden rounded-[26px] border border-white/8 p-5 ${presentation.mediaBackgroundClass}`}
+        className={`flex min-h-[260px] flex-col overflow-hidden rounded-[18px] border border-white/8 p-5 ${presentation.mediaBackgroundClass}`}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-wrap gap-2">
@@ -37,38 +37,38 @@ export function LobbyCard({ lobby, game }: LobbyCardProps) {
           </span>
         </div>
 
-        <div className="mt-16">
-          <p className={`eyebrow ${presentation.accentClass}`}>Available operation</p>
-          <h3 className="font-display mt-3 text-3xl leading-none text-white">
+        <div className="mt-10">
+          <p className={`font-caps text-[11px] uppercase ${presentation.accentClass}`}>
+            {gameLabel}
+          </p>
+          <h3 className="font-display mt-3 text-3xl leading-tight text-white">
             {lobby.title}
           </h3>
-          <p className="mt-3 max-w-lg text-sm leading-6 text-white/68">
-            {host ? `${host.user.username} is running this ${gameLabel} room.` : "Host ready."}{" "}
-            {lobby.visibility === "PRIVATE"
-              ? "Invite-only route with a direct code handoff."
-              : "Open discovery with live capacity and rank-aware entry."}
+          <p className="mt-3 text-sm leading-6 text-white/64">
+            {host ? `Hosted by ${host.user.username}.` : "Host ready."}{" "}
+            {lobby.visibility === "PRIVATE" ? "Private code." : "Public room."}
           </p>
         </div>
 
-        <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-8">
           <div>
             <div className="flex -space-x-3">
               {visibleMembers.map((member) => (
                 <div
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[#141312] bg-[#2b2a28] font-caps text-[11px] uppercase tracking-[0.18em] text-white"
+                  className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#141312] bg-[#2b2a28] font-caps text-[11px] uppercase text-white"
                   key={member.id}
                 >
                   {getInitials(member.user.username)}
                 </div>
               ))}
               {memberCount > visibleMembers.length ? (
-                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-dashed border-white/25 bg-transparent font-caps text-[11px] uppercase tracking-[0.18em] text-white/65">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-dashed border-white/25 bg-transparent font-caps text-[11px] uppercase text-white/65">
                   +{memberCount - visibleMembers.length}
                 </div>
               ) : null}
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-4 text-sm text-white/56">
+            <div className="mt-4 flex flex-wrap gap-3 text-sm text-white/56">
               <span>Code {lobby.code}</span>
               <span>Opened {formatRelativeTime(lobby.createdAt)}</span>
             </div>

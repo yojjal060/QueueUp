@@ -117,8 +117,11 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
-  console.error(`[ERROR] ${err.name}: ${err.message}`);
-
   const normalized = normalizeError(err);
+
+  if (normalized.statusCode >= 500) {
+    console.error(`[ERROR] ${err.name}: ${err.message}`);
+  }
+
   res.status(normalized.statusCode).json(normalized.body);
 }

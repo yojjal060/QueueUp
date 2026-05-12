@@ -143,3 +143,8 @@ vite.config.ts.timestamp-*
 .vite/
 first-prompt.md
 what_are_we_doing.md
+walkthrough1.md
+implementation_plan.md
+prompt.md
+design/
+docs/

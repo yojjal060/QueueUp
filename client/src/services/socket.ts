@@ -58,6 +58,10 @@ export interface ClientToServerEvents {
     payload: { lobbyCode: string },
     ack: SocketAck<{ lobbyCode: string }>
   ) => void;
+  "chat:message": (
+    payload: { lobbyCode: string; content: string },
+    ack: SocketAck<{ message: Message }>
+  ) => void;
 }
 
 export type QueueUpClientSocket = Socket<
